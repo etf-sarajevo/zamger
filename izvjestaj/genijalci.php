@@ -80,10 +80,10 @@ if ($studij == -2)
 	$minsumaects = $godinastudija * 60 - $limit_ects + 180;
 else
 	$minsumaects = $godinastudija * 60 - $limit_ects;
-$wheresemestar="";;
+$wheresemestar="";
 if ($godinastudija>0) {
 	?><h3><?=$godinastudija?>. godina studija</h3><?
-	$wheresemestar="and ss.semestar=".($godinastudija*2); 
+	$wheresemestar="and ss.semestar=" . ($godinastudija*2 - 1);
 	// za upit šta trenutno sluša gledamo samo ljetnji semestar, jer ako ima ljetnji onda je sigurno završio i zimski, dok obrnuto ne mora biti
 }
 
@@ -147,8 +147,8 @@ while ($r1 = db_fetch_row($q1)) {
 	
 	// preskacemo studente sa premalo polozenih predmeta
 	if ($limit_predmet>0) {
-		$q3 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk, studij as st, tipstudija as ts where sp.student=$id_studenta and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus and (select count(*) from konacna_ocjena as ko where ko.student=$id_studenta and ko.predmet=pk.predmet and ko.ocjena>5 and ko.akademska_godina<=$ak_god)=0");
-		if (db_result($q3,0,0)>$limit_predmet) continue;
+		$broj_nepolozenih = db_get("select count(*) from student_predmet as sp, ponudakursa as pk, studij as st, tipstudija as ts where sp.student=$id_studenta and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus and (select count(*) from konacna_ocjena as ko where ko.student=$id_studenta and ko.predmet=pk.predmet and ko.ocjena>5 and ko.akademska_godina<=$ak_god)=0");
+		if ($broj_nepolozenih > $limit_predmet) continue;
 	} else if ($sumaects<$minsumaects) continue; 
 	
 	$prosjek = $suma/$broj;
