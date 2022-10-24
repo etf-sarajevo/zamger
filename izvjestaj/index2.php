@@ -206,7 +206,19 @@ $sumagodine = $brojgodine = $sumauk = $brojuk = $sumaects = 0;
 
 // Ocjene po odluci:
 
-$q105 = db_query("select ko.ocjena, pp.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola, pp.ects, pp.sifra from konacna_ocjena as ko, odluka as o, pasos_predmeta as pp where ko.odluka=o.id and ko.pasos_predmeta=pp.id and ko.student=$student");
+$dod_odluka = "";
+if ($param_ciklus != 0) {
+	$q103 = db_query("SELECT MIN(ss.akademska_godina), MAX(ss.akademska_godina) FROM student_studij ss, studij s, tipstudija ts WHERE ss.student=$student AND ss.studij=s.id AND s.tipstudija=ts.id AND ts.ciklus=$param_ciklus");
+	if (db_num_rows($q103)==0) {
+		// Student never enrolled into this cycle, show nothing
+		$dod_odluka = " AND 0=1";
+	} else {
+		$r103 = db_fetch_row($q103);
+		$dod_odluka = " AND ko.akademska_godina>=" . $r103[0] . " AND ko.akademska_godina<=" . $r103[1];
+	}
+}
+
+$q105 = db_query("select ko.ocjena, pp.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola, pp.ects, pp.sifra from konacna_ocjena as ko, odluka as o, pasos_predmeta as pp where ko.odluka=o.id and ko.pasos_predmeta=pp.id and ko.student=$student $dod_odluka");
 if (db_num_rows($q105)>0) {
 	?>
 	<p><b>Ocjene donesene odlukom (nostrifikacija, promjena studija itd.):</b></p>
@@ -249,7 +261,6 @@ if (db_num_rows($q105)>0) print "</table></p><p>&nbsp;</p>\n";
 
 // Ocjene priznavanje
 
-if ($param_ciklus != 0) $dod_priznavanje = " and ciklus=$param_ciklus"; else $dod_priznavanje = "";
 $q125 = db_query("select naziv_predmeta, sifra_predmeta, ects, ocjena, odluka, akademska_godina, strana_institucija from priznavanje where student=$student $dod_priznavanje order by odluka, akademska_godina, naziv_predmeta");
 if (db_num_rows($q125)>0) {
 	?>
