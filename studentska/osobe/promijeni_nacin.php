@@ -4,6 +4,8 @@
 // Promjena načina studiranja
 
 function studentska_osobe_promijeni_nacin() {
+	require_once ("lib/formgen.php"); // db_dropdown
+	
 	$osoba = int_param('osoba');
 	
 	$studij = intval($_REQUEST['studij']);
