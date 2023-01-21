@@ -172,7 +172,7 @@ function student_zavrsni()  {
 	
 		// Ako je kandidat potvrdjen, nema mogucnosti promjene teme
 		// Prikazuje se stranica završnog rada
-		$thesis = api_call("thesis/forStudent/$userid");
+		$thesis = api_call("thesis/forStudent/$userid", [ "year" => $ag ]);
 		if ($_api_http_code == "200") {
 			$_REQUEST['zavrsni'] = $thesis['id'];
 			require_once('common/zavrsniStrane.php');
