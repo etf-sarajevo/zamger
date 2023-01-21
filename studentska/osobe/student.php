@@ -237,8 +237,10 @@ function studentska_osobe_student() {
 				// Upis na neparni semestar - da li je student dao uslov?
 				
 				// Pokusacemo odrediti uslov na osnovu polozenih predmeta...
-				global $zamger_predmeti_pao, $zamger_pao_ects;
+				global $zamger_predmeti_pao, $zamger_pao_ects, $uslov_debug;
 				$ima_uslov = ima_li_uslov($osoba, $trenutna_godina);
+				if (!$ima_uslov && $zamger_pao_ects == 0 && count($zamger_predmeti_pao) == 1 && $zamger_predmeti_pao[-1] == "(Nepoznat izborni predmet)")
+					$ima_uslov = true;
 				
 				if ($ima_uslov) {
 					if ($semestar == $studij_trajanje) {
