@@ -210,6 +210,7 @@ function studentska_osobe_upis() {
 					print "}\n";
 				}
 				?>
+               changeProgramme();
 			}
 			function changeProgramme() {
 				var curriculumEl = document.getElementById('curriculum');
