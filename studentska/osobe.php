@@ -127,6 +127,14 @@ function studentska_osobe() {
 		require_once("studentska/osobe/zaduzenje.php");
 		studentska_osobe_zaduzenje();
 	}
+	
+	
+	// Uređivanje konačnih ocjena
+	
+	else if ($akcija == "konacna_ocjena") {
+		require_once("studentska/osobe/konacna_ocjena.php");
+		studentska_osobe_konacna_ocjena($person);
+	}
 
 	
 	// Pregled informacija o osobi
@@ -604,11 +612,11 @@ function studentska_osobe() {
 		}
 	
 		// Link za uređivanje historije studenta TODO - obratiti pozornost na to "ko ima pristup"
-		if (in_array('student', $person['privileges']) && ($user_studentska || $user_siteadmin)) {
+		if (in_array('student', $person['privileges'])) {
 			// Uređivanje historije studenta
 			print "<p> Za uređivanje historije studenta, kliknite <a href='index.php?sta=studentska/uredi_historiju_studenta&student=".$osoba."'>ovdje</a>. </p>";
 			// Unos konačne ocjene studenta
-			print "<p> Za unos, pregled i izmjene konačnih ocjena po odluci, kliknite <a href='index.php?sta=studentska/konacna_ocjena&student=".$osoba."&akcija=pregled'>ovdje</a>. </p>";
+			print "<p> Za unos, pregled i izmjene konačnih ocjena po odluci, kliknite <a href='index.php?sta=studentska/osobe&osoba=".$osoba."&akcija=konacna_ocjena&subakcija=pregled'>ovdje</a>. </p>";
 		}
 	
 		

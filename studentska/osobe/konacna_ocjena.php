@@ -13,9 +13,13 @@ function bos_datum($datum){
 	return $date->format('d.m.Y');
 }
 
-function studentska_konacna_ocjena() {
-	global $userid, $user_siteadmin, $user_studentska, $db;
-	
+function bos_2_db($datum){
+	$datum = str_replace('/', '-', $datum);
+	$datum = str_replace(' ', '', $datum);
+	return date("Y-m-d", strtotime($datum));
+}
+
+function studentska_osobe_konacna_ocjena($person) {
 	// Učitaj CSS fajl iz static/css/style.css
 	?>
 	<link rel="stylesheet" href="static\css\style.css">
@@ -29,23 +33,16 @@ function studentska_konacna_ocjena() {
 	<script src='static/js/konacna_ocjena.js'> </script>
 	<?
 	
-	if (!$user_studentska && !$user_siteadmin) {
-		zamgerlog("nije studentska",3); // 3: error
-		zamgerlog2("nije studentska"); // 3: error
-		biguglyerror("Pristup nije dozvoljen.");
-		return;
-	}
-	
 	// ********************************************** POST REQUEST ************************************************** //
 	
-	if(isset($_REQUEST['student']) and isset($_REQUEST['akademska_godina']) and ($user_studentska or $user_siteadmin)){ // Pošto su svi required - dovoljan check za ovo dvoje
+	if(isset($_REQUEST['student']) and isset($_REQUEST['akademska_godina'])){ // Pošto su svi required - dovoljan check za ovo dvoje
 		
 		$student = intval($_REQUEST['student']);
 		$broj_protokola = db_escape($_REQUEST['broj_protokola']);
 		if (empty(trim($broj_protokola))) {
 			$odluka = "null";
 		} else {
-			$datum_odluke = date("Y-m-d", strtotime(str_replace('/', '-', db_escape($_REQUEST['datum_odluke']))));
+			$datum_odluke = bos_2_db($_REQUEST['datum_odluke']);
 			
 			// Prvo provjeravamo da li ima odluka u tabeli "odluka"
 			$odluka = db_query("SELECT * from odluka where datum = '$datum_odluke' and broj_protokola = '$broj_protokola' and student='$student'");
@@ -61,8 +58,8 @@ function studentska_konacna_ocjena() {
 		$predmet = intval($_REQUEST['predmet']);
 		$ag      = intval($_REQUEST['akademska_godina']);
 		$ocjena  = intval($_REQUEST['ocjena']);
-		$datum   = date("Y-m-d", strtotime(str_replace('/', '-', db_escape($_REQUEST['datum']))));
-		$datum_i = date("Y-m-d", strtotime(str_replace('/', '-', db_escape($_REQUEST['datum_u_indeksu']))));
+		$datum   = bos_2_db($_REQUEST['datum']);
+		$datum_i = bos_2_db($_REQUEST['datum_u_indeksu']);
 		$datum_p = intval($_REQUEST['datum_provjeren']);
 		$pasos   = intval($_REQUEST['pasos_predmeta']);
 		
@@ -89,7 +86,7 @@ function studentska_konacna_ocjena() {
 				if ($exists) {
 					niceerror("Student već ima unesenu ocjenu iz ovog predmeta!");
 					?>
-					<p>Idite na opciju <a href="?sta=studentska/konacna_ocjena&student=<?=$student?>&akcija=pregled&sve=1">Prikaz svih ocjena (ne samo po odluci)</a>, nađite ocjenu po želji, kliknite na <b>Uredite</b> i zatim dodajte broj odluke.</p>
+					<p>Idite na opciju <a href="?sta=studentska/osobe&osoba=<?=$student?>&akcija=konacna_ocjena&subakcija=pregled&sve=1">Prikaz svih ocjena (ne samo po odluci)</a>, nađite ocjenu po želji, kliknite na <b>Uredite</b> i zatim dodajte broj odluke.</p>
 					<?
 					return;
 				}
@@ -101,33 +98,29 @@ function studentska_konacna_ocjena() {
 	}
 	
 	
-	$student_id = intval($_REQUEST['student']);
-	$akcija = $_REQUEST['akcija'];
-	
-	$osoba = db_query("SELECT ime, prezime, spol FROM osoba where id = ".$student_id);
-	$osoba = db_fetch_row($osoba);
+	$subakcija = $_REQUEST['subakcija'];
 	
 	$brojac = 1; // Brojač za index u tabeli
 	
 	// Izaberi akademske godine
-	$akademske_godine = db_query("SELECT DISTINCT ss.akademska_godina, ak.naziv, ak.id from student_studij as ss, akademska_godina as ak where ss.student = $student_id and ss.akademska_godina = ak.id");
+	$akademske_godine = db_query("SELECT DISTINCT ss.akademska_godina, ak.naziv, ak.id from student_studij as ss, akademska_godina as ak where ss.student = " . $person['id'] . " and ss.akademska_godina = ak.id");
 	
-	if($akcija == 'pregled') {
+	if($subakcija == 'pregled') {
 		if ($_REQUEST['sve']) $uslov = "";
 		else $uslov = "AND ko.odluka is not null";
 		
 		// Daj sve ocjene po konačnoj odluci
 		$query = db_query("SELECT ko.student, ko.akademska_godina, ko.predmet, ko.ocjena, ag.id, ag.naziv, p.id, pp.naziv
 			FROM konacna_ocjena as ko, akademska_godina as ag, predmet as p, pasos_predmeta pp
-			WHERE ko.student=$student_id and ko.akademska_godina=ag.id and ko.predmet=p.id and ko.pasos_predmeta=pp.id $uslov
+			WHERE ko.student=" . $person['id'] . " and ko.akademska_godina=ag.id and ko.predmet=p.id and ko.pasos_predmeta=pp.id $uslov
 			ORDER BY ag.id, pp.naziv");
-	}else if($akcija == 'uredi'){
+	}else if($subakcija == 'uredi'){
 		$ag = intval($_REQUEST['ak']);
 		$predmet = intval($_REQUEST['predmet']);
 		$odluka = [ '', '', '', '' ];
 		
-		if($ag and $predmet and $student_id){
-			$konacna_ocjena = db_query("SELECT ko.student, ko.predmet, ko.akademska_godina, ko.ocjena, ko.datum, ko.datum_u_indeksu, ko.odluka, ko.datum_provjeren, ko.pasos_predmeta, ak.id, ak.naziv, p.id, p.naziv, pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from konacna_ocjena as ko, akademska_godina as ak, predmet as p, pasos_predmeta as pp where ko.student = $student_id and ko.predmet = $predmet and ko.akademska_godina = $ag and ko.akademska_godina = ak.id and ko.predmet = p.id and ko.pasos_predmeta = pp.id ");
+		if($ag and $predmet){
+			$konacna_ocjena = db_query("SELECT ko.student, ko.predmet, ko.akademska_godina, ko.ocjena, ko.datum, ko.datum_u_indeksu, ko.odluka, ko.datum_provjeren, ko.pasos_predmeta, ak.id, ak.naziv, p.id, p.naziv, pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from konacna_ocjena as ko, akademska_godina as ak, predmet as p, pasos_predmeta as pp where ko.student = " . $person['id'] . " and ko.predmet = $predmet and ko.akademska_godina = $ag and ko.akademska_godina = ak.id and ko.predmet = p.id and ko.pasos_predmeta = pp.id ");
 			$konacna_ocjena = db_fetch_row($konacna_ocjena);
 			
 			// $predmeti = db_query("SELECT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet");
@@ -151,10 +144,10 @@ function studentska_konacna_ocjena() {
 		<table border="0" width="700">
 			<tr>
 				<td>
-					<a href="?sta=studentska/osobe&search=sve&akcija=edit&osoba=<?= $student_id; ?>"> Nazad na podatke o studentu </a>
+					<a href="?sta=studentska/osobe&search=sve&akcija=edit&osoba=<?= $person['id']; ?>"> Nazad na podatke o studentu </a>
 					
 					<?php
-					if($akcija == 'pregled'){
+					if($subakcija == 'pregled'){
 						?>
 						<h3> Pregled svih ocjena po odluci</h3>
 
@@ -178,30 +171,30 @@ function studentska_konacna_ocjena() {
 									<td><?= $row['7'] ?></td>
 									<td><?= $row['3'] ?></td>
 									<td style="width: 80px;">
-										<a href="?sta=studentska/konacna_ocjena&student=<?= $row['0'] ?>&akcija=uredi&ak=<?= $row['1'] ?>&predmet=<?= $row['2'] ?>">
+										<a href="?sta=studentska/osobe&osoba=<?= $row['0'] ?>&akcija=konacna_ocjena&subakcija=uredi&ak=<?= $row['1'] ?>&predmet=<?= $row['2'] ?>">
 											<button>Uredite</button>
 										</a>
 									</td>
 								</tr>
 								<?php
 							}
-							?>$konacna_ocjena
+							?>
 							</tbody>
 						</table>
 						<br>
-						<p>Za unos konačne ocjene po odluci, kliknite <a href="?sta=studentska/konacna_ocjena&student=<?= $student_id ?>&akcija=unos">ovdje</a>.</p>
-						<p>Za prikaz svih ocjena (ne samo ocjena po odluci), kliknite <a href="?sta=studentska/konacna_ocjena&student=<?= $student_id ?>&akcija=pregled&sve=1">ovdje</a>.</p>
+						<p>Za unos konačne ocjene po odluci, kliknite <a href="?sta=studentska/osobe&osoba=<?= $person['id'] ?>&akcija=konacna_ocjena&subakcija=unos">ovdje</a>.</p>
+						<p>Za prikaz svih ocjena (ne samo ocjena po odluci), kliknite <a href="?sta=studentska/osobe&osoba=<?= $person['id'] ?>&akcija=konacna_ocjena&subakcija=pregled&sve=1">ovdje</a>.</p>
 						<?php
-					}else if($akcija == 'unos' or $akcija == 'uredi'){
+					}else if($subakcija == 'unos' or $subakcija == 'uredi'){
 						?>
-						<h3> <?= ($akcija == 'uredi') ? 'Uređivanje konačne ocjene ( <a href="#" class="obrisi-konacnu-ocjenu" st="'.$student_id.'" ak="'.$konacna_ocjena[2].'" pr="'.$konacna_ocjena[1].'"> OBRIŠITE </a>) ' : 'Unos konačne ocjene po odluci' ?> </h3>
+						<h3> <?= ($subakcija == 'uredi') ? 'Uređivanje konačne ocjene ( <a href="#" class="obrisi-konacnu-ocjenu" st="'.$person['id'].'" ak="'.$konacna_ocjena[2].'" pr="'.$konacna_ocjena[1].'"> OBRIŠITE </a>) ' : 'Unos konačne ocjene po odluci' ?> </h3>
 						
 						<form action="" method="POST">
 							<div class="input-row">
 								<div class="input-col">
 									<div class="form-label">Student</div>
-									<input type="text" class="form-input" value="<?= $osoba[0].' '.$osoba[1]; ?>" readonly>
-									<input type="hidden" name="student" id="ocjena-po-odluci-student" value="<?= $student_id ?>">
+									<input type="text" class="form-input" value="<?= $person['name'].' '.$person['surname']; ?>" readonly>
+									<input type="hidden" name="student" id="ocjena-po-odluci-student" value="<?= $person['id'] ?>">
 									<!-- Da iskoristimo istu formu za uređivanje :: Ako ima ovaj input, onda ga uređujemo ! -->
 									<?= isset($konacna_ocjena) ? '<input type="hidden" name="uredi" value="1">' : '' ?>
 								</div>
@@ -300,7 +293,7 @@ function studentska_konacna_ocjena() {
 						</form>
 
 						<br>
-						<p>Za pregled konačnih ocjena po odluci, kliknite <a href="?sta=studentska/konacna_ocjena&student=<?= $student_id ?>&akcija=pregled">ovdje</a>.</p>
+						<p>Za pregled konačnih ocjena po odluci, kliknite <a href="?sta=studentska/osobe&osoba=<?= $person['id'] ?>&akcija=konacna_ocjena&subakcija=pregled">ovdje</a>.</p>
 						<?php
 					}
 					?>
