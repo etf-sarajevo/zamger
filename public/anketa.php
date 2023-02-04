@@ -185,7 +185,7 @@ function public_anketa() {
 				<a href="index.php">Nazad na početnu stranicu</a>
 			</center>
 			<?
-		} else if ($_api_http_code == "403" && $result['message'] == "Student already completed this poll") {
+		} else if ($_api_http_code == "403" && strstr($result['message'], "Student already")) {
 			?>
 			<center>
 				<? 	niceerror("Već ste jednom popunili ovu anketu"); ?>
