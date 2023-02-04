@@ -27,6 +27,7 @@ $studij = int_param('studij');
 $godina = int_param('godina');
 $tabelarno = param('tabelarno');
 $ponovci = int_param('ponovci');
+$koji_put = int_param('koji_put');
 $mjesto_rodjenja = param('mjesto_rodjenja');
 $adresa_mjesto = param('adresa_mjesto');
 $drzavljanstvo = param('drzavljanstvo');
@@ -91,6 +92,7 @@ if ($ponovci == 1) $uslovi .= " and ss.ponovac=0";
 if ($ponovci == 2) $uslovi .= " and ss.ponovac=1";
 if ($ponovci == 3) $uslovi .= " and ss.status_studenta=1";
 if ($ponovci == 4) $uslovi .= " and ss.ponovac=1 and ss.status_studenta=0";
+if ($koji_put > 0) $uslovi .= " and ss.put=" . ($koji_put + 1);
 if ($login) $uslovi .= " and o.id=a.id";
 if ($mjesto_rodjenja) $uslovi .= " and o.mjesto_rodjenja=m.id";
 if ($adresa_mjesto) {
