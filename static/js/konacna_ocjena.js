@@ -72,14 +72,17 @@ $( document ).ready(function() {
         let ak      = $(this).attr('ak');
         console.log(student + ' ' + predmet + ' ' + ak);
 
-        $.ajax({
-            type:'POST',
-            url: 'index.php?sta=ws/predmet',
-            data: {obrisi_konacnu_predmet : predmet, obrisi_konacnu_student : student, obrisi_konacnu_ak : ak},
-            success:function(response){
-                window.location = '?sta=studentska/konacna_ocjena&student='+student+'&akcija=pregled';
-            }
-        });
+        let decision = confirm("Da li ste sigurni da želite obrisati ocjenu?");
+        if (decision) {
+            $.ajax({
+                type: 'POST',
+                url: 'index.php?sta=ws/predmet',
+                data: {obrisi_konacnu_predmet: predmet, obrisi_konacnu_student: student, obrisi_konacnu_ak: ak},
+                success: function (response) {
+                    window.location = '?sta=studentska/osobe&osoba=' + student + '&akcija=konacna_ocjena&subakcija=pregled';
+                }
+            });
+        }
     });
 
     $( ".datepicker-2" ).datepicker({
