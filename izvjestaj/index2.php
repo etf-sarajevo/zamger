@@ -218,7 +218,7 @@ if ($param_ciklus != 0) {
 	}
 }
 
-$q105 = db_query("select ko.ocjena, pp.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola, pp.ects, pp.sifra from konacna_ocjena as ko, odluka as o, pasos_predmeta as pp where ko.odluka=o.id and ko.pasos_predmeta=pp.id and ko.student=$student $dod_odluka");
+$q105 = db_query("select ko.ocjena, pp.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola, pp.ects, pp.sifra from konacna_ocjena as ko, odluka as o, pasos_predmeta as pp where ko.odluka=o.id and ko.pasos_predmeta=pp.id and ko.student=$student $dod_odluka ORDER BY o.datum, ko.datum");
 if (db_num_rows($q105)>0) {
 	?>
 	<p><b>Ocjene donesene odlukom (nostrifikacija, promjena studija itd.):</b></p>
