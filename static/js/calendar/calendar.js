@@ -405,9 +405,9 @@ let calendar = {
 
     },
     createSingleDayHeader : function(){
-        let addEvent = ($(".new-event-form").length) ? '<div class="inside-element create-cal-event"> <i class="fas fa-plus"></i> <p>Unos</p> </div> </div>' : '';
+        let addEvent = ($(".new-event-form").length) ? '<div class="inside-element create-cal-event"> <i class="fas fa-plus"></i> <p>Unos</p> </div>' : '';
 
-        return '<div class="header-of-day"> <h2 id="name-of-single-day">' + this.d_day_in_week + ', ' + this.d_date + ' </h2> <div class="day-actions"><div class="inside-element back-to-full-calendar"> <i class="fas fa-angle-left"></i> <p>Nazad</p> </div> ' + addEvent + ' </div>';
+        return '<div class="header-of-day"> <h2 id="name-of-single-day">' + this.d_day_in_week + ', ' + this.d_date + ' </h2> <div class="day-actions"><div class="inside-element back-to-full-calendar"> <i class="fas fa-angle-left"></i> <p>Nazad</p> </div> ' + addEvent + ' </div></div>';
     },
     getHourValue : function(index){
         if(index < 10){return ('0' + index + ':00');}
@@ -495,6 +495,10 @@ let refreshToday = function(){
     $(".this-day-total").text(0);
 };
 let appendToToday = function(event){
+    let title = event['title'] + '\u000d' + event['description'];
+    if (event['title'].length == 0 && event['description'].length == 0)
+        title = event['CourseUnit']['name'] + '\u000d' + event['CourseActivity']['name'];
+        
     $(".this-day-total").text(parseInt($(".this-day-total").text()) + 1);
     // Check if date is current date; If it is, add to side menu
     $(".items-wrapper").append(function () {
@@ -502,7 +506,7 @@ let appendToToday = function(event){
             .attr('year', (new Date()).getFullYear())
             .attr('month', (new Date()).getMonth())
             .attr('day', (new Date()).getDate())
-            .attr('title', event['title'] + '\u000d' + event['description'])
+            .attr('title', title)
             .attr('event-id', 'event-elem-' + event['id'])
             .append(function () {
                 return $("<p>").text(extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration'])));
@@ -522,7 +526,8 @@ let dayDataParams = function(){
         uri = 'event/between';
         params = {
             start : formatDate(event_date) + ' 00:00:00',
-            end : formatDate(event_date) + ' 23:59:59'
+            end : formatDate(event_date) + ' 23:59:59',
+            "resolve" : [ "CourseUnit", "CourseActivity" ],
         };
     }
     return {
@@ -548,9 +553,13 @@ let dayData = function(date){
 
             let height = event_minutes_end - event_minutes_start;
             let eventActions = (dataParams['wrapper']) ? '<div class="event-actions"> <div class="ea-d" event-id="'+ event['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> <div class="ea-u ml-1" event-id="'+ event['id'] +'" title="Uredite"><i class="fas fa-edit"></i></div> </div>' : '';
+            
+            let title = event['title'];
+            if (title.length == 0)
+                title = event['CourseUnit']['name'] + ' - ' + event['CourseActivity']['name'];
 
             $(".events-wrapper").append(
-                '<div class="event-short-preview event-short-preview-'+event['EventType']+'" title="' + event['title'] + '" id="event-elem-'+event['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+event['id']+'-header"> ' +event['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration']))) + ' </p> ' + eventActions + ' </div> '
+                '<div class="event-short-preview event-short-preview-'+event['EventType']+'" title="' + title + '" id="event-elem-'+event['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+event['id']+'-header"> ' +title + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration']))) + ' </p> ' + eventActions + ' </div> '
             );
 
             if(isToday(event_date)){
