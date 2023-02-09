@@ -216,8 +216,15 @@ function ajax_box() {
 			?>
 			if (method == "GET") {
 				for(param in params) {
-					if (url.includes("?")) url += "&"; else url += "?";
-					url += param + "=" + encodeURI(params[param]);
+					if (Array.isArray(params[param])) {
+						for (let member in params[param]) {
+							if (url.includes("?")) url += "&"; else url += "?";
+							url += param + '[]=' + encodeURI(params[param][member]);
+						}
+					} else {
+						if (url.includes("?")) url += "&"; else url += "?";
+						url += param + '=' + encodeURI(params[param]);
+					}
 				}
 			}
 
