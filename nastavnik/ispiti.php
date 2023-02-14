@@ -448,8 +448,7 @@ function nastavnik_ispiti() {
 		$mjesec = nuliraj_broj(int_param('month'));
 		$godina = nuliraj_broj(int_param('year'));
 		$db_date = "$godina-$mjesec-$dan";
-	
-	
+		
 		$tipispita = intval($_POST['tipispita']);
 		$apsolventski_rok = intval($_POST['apsolventski_rok']);
 	
@@ -472,6 +471,9 @@ function nastavnik_ispiti() {
 			} else if ($_api_http_code == "400" && $exam['message'] == "Invalid date") {
 				niceerror("Neispravan datum ispita");
 				print "<p>Unijeli ste datum $dan. $mjesec. $godina. koji je nemoguć.</p>";
+			} else if ($_api_http_code == "400" && $exam['message'] == "Invalid course activity") {
+				niceerror("Nepostojeći tip ispita");
+				print "<p>Niste odabrali tip ispita koji želite kreirati</p>";
 			} else {
 				niceerror("Neuspješno kreiranje ispita");
 				api_report_bug($exam, $addExam);
@@ -559,7 +561,22 @@ function nastavnik_ispiti() {
 	<?
 	
 	
-	
+	$hasExamActivity = false;
+	foreach($course['activities'] as $cact) {
+		if ($cact['Activity']['id'] == 8) { // 8 = Exam
+			$hasExamActivity = true;
+		}
+	}
+	if (!$hasExamActivity) {
+		?><p style="color: red"><b>Ne možete kreirati ispit jer niste podesili niti jednu aktivnost tipa &quot;Ispit&quot;.</b> Vaše opcije su sljedeće:
+		<ul style="color: red">
+			<li>Na kartici <a href="?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>">Aktivnosti</a> dodajte novu aktivnost tipa &quot;Ispit&quot; ili promijenite tip neke od postojećih aktivnosti.</li>
+			<li>Ako ste ispit definisali kao &quot;Fiksne bodove&quot;, ne trebate koristiti ovu karticu.</li>
+			<li>Ako želite da studenti imaju opciju prijave za aktivnost koja nije tipa &quot;Ispit&quot;, to možete postići koristeći karticu Kalendar.</li>
+			<li>Za unos konačne ocjene nije neophodno imati kreiran ispit, samo se pobrinite da je datum ocjene ispravan za sve studente, tj. da se poklapa sa datumom u indeksu. Za te potrebe preporučujemo korištenje opcije <a href="?sta=nastavnik/unos_ocjene&predmet=<?=$predmet?>&ag=<?=$ag?>">Pojedinačni unos konačnih ocjena</a></li>
+		</ul></p>
+		<?php
+	}
 	
 	// Forma za kreiranje ispita
 	
