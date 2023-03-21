@@ -36,6 +36,7 @@ $(document).ready(function () {
         let email = [];
 
         for(let i=0; i<emails.length; i++){
+            if (emails[i] === '') continue;
             email[i] = {
                 id : emailID[i],
                 address : emails[i],

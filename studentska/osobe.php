@@ -451,7 +451,7 @@ function studentska_osobe() {
 			JMBG: <b><?=$exp['jmbg']?></b><br/>
 			<br/>
 			Datum rođenja: <b><?
-			if ($exp['dateOfBirth']) print date("d. m. Y.", db_timestamp($exp['dateOfBirth']))?></b><br/>
+			if ($exp['dateOfBirth'] && $exp['dateOfBirth'] != "0000-00-00") print date("d. m. Y.", db_timestamp($exp['dateOfBirth']))?></b><br/>
 			Mjesto rođenja: <b><?=$placeOfBirth?></b><br/>
 			Državljanstvo: <b><?=$nationality?></b><br/>
 			</td><td valign="top">

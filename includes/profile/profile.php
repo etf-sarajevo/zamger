@@ -32,7 +32,7 @@ function includes_profile($title, $person, $isAdmin) {
 	 * 	If null, print empty string, otherwise change format from yyyy-mm-dd to dd.mm.yyyy
 	 */
 	
-	$dateOfBirth = (empty($person['ExtendedPerson']['dateOfBirth'])) ? '' : date("d.m.Y", strtotime($person['ExtendedPerson']['dateOfBirth']));
+	$dateOfBirth = (empty($person['ExtendedPerson']['dateOfBirth']) || $person['ExtendedPerson']['dateOfBirth'] == "0000-00-00") ? '' : date("d.m.Y", strtotime($person['ExtendedPerson']['dateOfBirth']));
 	
 	// Keywords - translate from API format to format expected by Form class
 	$drzava = [];
@@ -58,9 +58,6 @@ function includes_profile($title, $person, $isAdmin) {
 	foreach (api_call("zamger/year", [] )["results"] as $result) {
 		$year = substr($result['name'], strpos($result['name'], "/") + 1);
 		if ($result['id'] != 0) $skolska_godina[] = [$result['id'], $year];
-	}
-	if ($person['id'] == 7371) {
-		api_debug($person);
 	}
 	
 	
@@ -317,7 +314,7 @@ function includes_profile($title, $person, $isAdmin) {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="phone">Telefon</label> <!-- Old -->
-								<?= Form::text('phone', $person['ExtendedPerson']['phone'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'phone', 'aria-describedby' => 'phoneHelp', 'required' => 'required']) ?>
+								<?= Form::text('phone', $person['ExtendedPerson']['phone'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'phone', 'aria-describedby' => 'phoneHelp']) ?>
 								<small id="phoneHelp" class="form-text text-muted">Format telefona: 00387 6X XXX XXX </small>
 							</div>
 						</div>
