@@ -192,6 +192,8 @@ $prvidatum=$zadnjidatum=0;
 
 $godina = date("Y", $stardate);
 $mjesec = date("m", $stardate);
+$timestamp=$stardate;
+$login_threshold = 60*60*1; // 1 hour
 
 do {
 	$logfile = $conf_files_path . "/log/$godina/$godina-$mjesec.log";
@@ -234,6 +236,7 @@ do {
 		$datum_vrijeme = $matches[5];
 		$evt = $matches[6];
 		
+		$oldtimestamp = $timestamp;
 		$timestamp = strtotime($datum_vrijeme);
 		if ($timestamp > $stardate) continue;
 		$nicedate = " (".date("d.m.Y. H:i:s", $timestamp).")";
@@ -359,6 +362,12 @@ do {
 		}
 		else if (strstr($evt," su=")) {
 			$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> SU to ID: $usr $nicedate\n".$eventshtml[$logid];
+			$lastlogin[$usr]=0;
+		}
+		
+		else if ($oldtimestamp - $timestamp > $login_threshold && $lastlogin[$usr] && $lastlogin[$usr]!=0) {
+			$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> login (ID: $usr) $nicedate\n".$eventshtml[$logid];
+			$stardate=$timestamp;
 			$lastlogin[$usr]=0;
 		}
 
