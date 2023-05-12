@@ -127,6 +127,7 @@ function student_zavrsni()  {
 		<h3>Detaljnije informacije o temi završnog rada</h3>
 		<table border="0" cellpadding="10">
 		<tr><td align="right" valign="top"><b>Naslov teme:</b></td><td><?=$thesis['title']?></td></tr>
+		<tr><td align="right" valign="top"><b>Naslov teme (engleski):</b></td><td><?=$thesis['titleEn']?></td></tr>
 		<tr><td align="right" valign="top"><b>Podnaslov:</b></td><td><?=$thesis['subtitle']?></td></tr>
 		<tr><td align="right" valign="top"><b>Kratki pregled teme:</b></td><td><?=nl2br(linkuj_urlove($thesis['description']))?></td></tr>
 		<tr><td align="right" valign="top"><b>Literatura:</b></td><td><?=nl2br(linkuj_urlove($thesis['literature']))?></td></tr>

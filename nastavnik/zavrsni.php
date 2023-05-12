@@ -219,6 +219,7 @@ function nastavnik_zavrsni() {
 				"CourseUnit" => [ "id" => $predmet ],
 				"AcademicYear" => [ "id" => $ag ],
 				"title" => $_REQUEST['naslov'],
+				"titleEn" => $_REQUEST['naslov_en'],
 				"subtitle" => $_REQUEST['podnaslov'],
 				"description" => $_REQUEST['kratki_pregled'],
 				"literature" => $_REQUEST['literatura'],
@@ -318,7 +319,7 @@ function nastavnik_zavrsni() {
 				$thesis->committeeMembers[] = array_to_object([ "id" => $id_clankom]);
 			$thesis->menthors = [];
 			
-			if (empty($_REQUEST['naslov'])) {
+			if (empty($_REQUEST['naslov']) || empty($_REQUEST['naslov_en'])) {
 				niceerror('Unesite sva obavezna polja.');
 				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 				return;
@@ -390,7 +391,7 @@ function nastavnik_zavrsni() {
 			<h3>Izmjena teme završnog rada</h3>
 			<?
 		} else {
-			$thesis = [ "title" => "", "subtitle" => "", "description" => "", "literature" => "", "thesisDecision" => [ "id" => 0 ], "committeeDecision" => [ "id" => 0 ] ];
+			$thesis = [ "title" => "", "titleEn" => "", "subtitle" => "", "description" => "", "literature" => "", "thesisDecision" => [ "id" => 0 ], "committeeDecision" => [ "id" => 0 ] ];
 			?>	
 			<h3>Nova tema završnog rada</h3>
 			<?
@@ -478,6 +479,7 @@ function nastavnik_zavrsni() {
 		<?=genform("POST", "addForm");?>
 			<input type="hidden" name="subakcija" value="potvrda">
 			<label for="naslov"><span>Naslov teme: <font color="red">*</font></span> <input name="naslov" type="text" id="naslov" size="70" value="<?=$thesis['title']?>"></label>
+			<label for="naslov_en"><span>Naslov teme (engleski): <font color="red">*</font></span> <input name="naslov_en" type="text" id="naslov_en" size="70" value="<?=$thesis['titleEn']?>"></label>
 			<label for="podnaslov"><span>Podnaslov:</span> <input name="podnaslov" type="text" id="podnaslov" size="70" value="<?=$thesis['subtitle']?>"></label>
 			<label for="predmet"><span>Predmet:</span> <select name="na_predmetu"><?=$prof_predmeti?></select></label>  
 			<label for="kandidat"><span>Kandidat:</span> <select name="kandidat"><?=$studenti_ispis?></select></label>  

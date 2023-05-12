@@ -261,6 +261,7 @@ function studentska_zavrsni()  {
 			$ag = intval($_REQUEST['ag']);
 
 			$naslov = db_escape(trim($_REQUEST['naslov']));
+			$naslov_en = db_escape(trim($_REQUEST['naslov_en']));
 			$podnaslov = db_escape(trim($_REQUEST['podnaslov']));
 			$kratki_pregled  = db_escape_string(trim($_REQUEST['kratki_pregled']));
 			$mentor = intval($_REQUEST['mentor']);
@@ -407,7 +408,7 @@ function studentska_zavrsni()  {
 
 	
 			if ($id > 0) { // Izmjena teme
-				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', mentor=$mentor, drugi_mentor=$drugi_mentor, predsjednik_komisije=$predsjednik_komisije, clan_komisije=$clan_komisije, clan_komisije2=$clan_komisije2, student=$student, kandidat_potvrdjen=$kandidat_potvrdjen, termin_odbrane=FROM_UNIXTIME($termin_odbrane), rad_na_predmetu=$rad_na_predmetu, broj_diplome='$broj_diplome', sala='$sala', odluka_komisija=$odluka_komisija, odluka_tema=$odluka_tema WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', naslov_en='$naslov_en', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', mentor=$mentor, drugi_mentor=$drugi_mentor, predsjednik_komisije=$predsjednik_komisije, clan_komisije=$clan_komisije, clan_komisije2=$clan_komisije2, student=$student, kandidat_potvrdjen=$kandidat_potvrdjen, termin_odbrane=FROM_UNIXTIME($termin_odbrane), rad_na_predmetu=$rad_na_predmetu, broj_diplome='$broj_diplome', sala='$sala', odluka_komisija=$odluka_komisija, odluka_tema=$odluka_tema WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 				nicemessage('Tema završnog rada je uspješno izmijenjena.');
 				zamgerlog("izmijenjena tema zavrsnog rada $id na predmetu pp$predmet", 2);
 				zamgerlog2("izmijenio temu zavrsnog rada", $id);
@@ -421,7 +422,7 @@ function studentska_zavrsni()  {
 				else
 					$id = db_result($znesta,0,0)+1;
 
-				$q906 = db_query("INSERT INTO zavrsni (id, naslov, podnaslov, predmet, akademska_godina, kratki_pregled, literatura, mentor, drugi_mentor, student, kandidat_potvrdjen, predsjednik_komisije, clan_komisije, clan_komisije2, termin_odbrane, rad_na_predmetu, broj_diplome, sala, odluka_komisija, odluka_tema) VALUES ($id, '$naslov', '$podnaslov', $predmet, $ag,  '$kratki_pregled', '$literatura', $mentor, $drugi_mentor, $student, $kandidat_potvrdjen, $predsjednik_komisije, $clan_komisije, $clan_komisije2, FROM_UNIXTIME($termin_odbrane), $rad_na_predmetu, '$broj_diplome', '$sala', $odluka_komisija, $odluka_tema)");
+				$q906 = db_query("INSERT INTO zavrsni (id, naslov, naslov_en, podnaslov, predmet, akademska_godina, kratki_pregled, literatura, mentor, drugi_mentor, student, kandidat_potvrdjen, predsjednik_komisije, clan_komisije, clan_komisije2, termin_odbrane, rad_na_predmetu, broj_diplome, sala, odluka_komisija, odluka_tema) VALUES ($id, '$naslov', '$naslov_en', '$podnaslov', $predmet, $ag,  '$kratki_pregled', '$literatura', $mentor, $drugi_mentor, $student, $kandidat_potvrdjen, $predsjednik_komisije, $clan_komisije, $clan_komisije2, FROM_UNIXTIME($termin_odbrane), $rad_na_predmetu, '$broj_diplome', '$sala', $odluka_komisija, $odluka_tema)");
 
 				nicemessage('Nova tema završnog rada je uspješno dodana.');
 				zamgerlog("dodana nova tema zavrsnog rada $id na predmetu pp$predmet", 2);
@@ -439,7 +440,7 @@ function studentska_zavrsni()  {
 		// Ako je definisan ID, onda je u pitanju izmjena
 		if ($id>0) {
 			$tekst = "Izmjena teme završnog rada";
-			$q98 = db_query("SELECT student, mentor, drugi_mentor, predsjednik_komisije, clan_komisije, clan_komisije2, naslov, podnaslov, kratki_pregled, literatura, UNIX_TIMESTAMP(termin_odbrane), rad_na_predmetu, broj_diplome, sala, odluka_komisija, odluka_tema FROM zavrsni WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+			$q98 = db_query("SELECT student, mentor, drugi_mentor, predsjednik_komisije, clan_komisije, clan_komisije2, naslov, podnaslov, kratki_pregled, literatura, UNIX_TIMESTAMP(termin_odbrane), rad_na_predmetu, broj_diplome, sala, odluka_komisija, odluka_tema, naslov_en FROM zavrsni WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 			if (db_num_rows($q98)<1) {
 				niceerror("Nepostojeći završni rad");
 				zamgerlog("spoofing zavrsnog rada $id kod izmjene teme", 3);
@@ -453,6 +454,7 @@ function studentska_zavrsni()  {
 			$id_clankom = db_result($q98, 0, 4);
 			$id_clankom2 = db_result($q98, 0, 5);
 			$naslov = db_result($q98, 0, 6);
+			$naslov_en = db_result($q98, 0, 16);
 			$podnaslov = db_result($q98, 0, 7);
 			$kratki_pregled = db_result($q98, 0, 8);
 			$literatura = db_result($q98, 0, 9);
@@ -481,7 +483,7 @@ function studentska_zavrsni()  {
 		} else {
 			$tekst = "Nova tema završnog rada";
 			$id_studenta = $id_mentora = $id_mentora2 = $id_predkom = $id_clankom = $id_clankom2 = $rad_na_predmetu = 0;
-			$naslov = $kratki_pregled = $literatura = $broj_diplome = $sala = $broj_odluke = $datum_odluke = "";
+			$naslov = $naslov_en = $kratki_pregled = $literatura = $broj_diplome = $sala = $broj_odluke = $datum_odluke = "";
 			
 			$broj_odluke = "04-1-"; // FIXME !!!
 			
@@ -637,6 +639,10 @@ function studentska_zavrsni()  {
 				<div class="row">
 					<span class="label">Naslov teme *</span>
 					<span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?=$naslov?>"></span> 
+				</div>
+				<div class="row">
+					<span class="label">Naslov teme (engleski) *</span>
+					<span class="formw"><input name="naslov_en" type="text" id="naslov" size="70" value="<?=$naslov_en?>"></span>
 				</div>
 				<div class="row">
 					<span class="label">Podnaslov</span>
