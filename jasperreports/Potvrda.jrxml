@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.12.2.final using JasperReports Library version 6.12.2-75c5e90a222ab406e416cbf590a5397028a52de3  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Potvrda" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="5b016f3d-d5e5-4a91-bbb1-1c18a6f0f594">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ZamgerDataAdapter.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ZamgerDataAdapter"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="232"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="760"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
@@ -54,11 +54,11 @@ d.naziv drzava_rodjenja, s.naziv naziv_studija, ss.semestar,
 ss.ponovac, ss.status_studenta, ss.put, ag.naziv naziv_akademske_godine, 
 ns.naziv nacin_studiranja_txt, sp.naziv svrha_potvrde,
 ts.ciklus, tituliraj(i.dekan) dekan, zzp.datum_obrade,
-CONCAT('00000', zzp.id) zahtjev
+CONCAT('00000', zzp.id) zahtjev, inst.naziv naziv_odsjeka
 FROM zahtjev_za_potvrdu zzp, osoba o, mjesto m, opcina op,
 drzava d, studij s, akademska_godina ag, 
 nacin_studiranja ns, svrha_potvrde sp, tipstudija ts,
-institucija i, jasper_token jt, student_studij ss
+institucija i, institucija inst, jasper_token jt, student_studij ss
 INNER JOIN (
          SELECT student, akademska_godina, MAX(semestar) msem
          FROM student_studij
@@ -68,7 +68,7 @@ WHERE (zzp.id=$P{zahtjev} OR (zzp.datum_zahtjeva >= CONCAT($P{zahtjev_datum}, ' 
 zzp.akademska_godina=ag.id AND zzp.svrha_potvrde=sp.id AND
 zzp.student=ss.student AND 
 zzp.akademska_godina=ss.akademska_godina AND
-ss.studij=s.id AND ss.nacin_studiranja=ns.id AND
+ss.studij=s.id AND s.institucija=inst.id AND ss.nacin_studiranja=ns.id AND
 m.id=o.mjesto_rodjenja AND op.id=m.opcina AND
 d.id=m.drzava AND s.tipstudija=ts.id AND i.tipinstitucije=1
 AND zzp.tip_potvrde=1
@@ -142,6 +142,7 @@ LIMIT 100]]>
 	</field>
 	<field name="datum_obrade" class="java.sql.Date"/>
 	<field name="zahtjev" class="java.lang.String"/>
+	<field name="naziv_odsjeka" class="java.lang.String"/>
 	<variable name="CURRENT_PAGE_NUMBER" class="java.lang.Integer" resetType="None" incrementType="Page">
 		<variableExpression><![CDATA[$V{CURRENT_PAGE_NUMBER} == null? $V{PAGE_NUMBER}: $V{PAGE_NUMBER} +1]]></variableExpression>
 	</variable>
@@ -335,7 +336,7 @@ LIMIT 100]]>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{naziv_studija}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{naziv_odsjeka}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="333" y="177" width="186" height="21" uuid="9ac39181-7877-48fe-951d-2a94523b3a9e"/>
