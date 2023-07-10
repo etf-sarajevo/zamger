@@ -620,13 +620,16 @@ function studentski_meni($fj) {
 			
 			// Studentski moduli aktivirani za ovaj predmet
 			$translation = [1 => "student/moodle", 2 => "student/zadaca", 4 => "student/projekti", 5 => "student/kviz", 6 => "student/anketa", 7 => "student/gg" ];
+			$printedHomework = false;
 			foreach($courseDetail['activities'] as $activity) {
 				if (!array_key_exists($activity['Activity']['id'], $translation))
 					continue;
 				$sta = $translation[$activity['Activity']['id']];
 				if ($activity['Activity']['id'] == 2) {
-					if (array_key_exists("StudentSubmit", $activity['options']) && $activity['options']['StudentSubmit'])
+					if (array_key_exists("StudentSubmit", $activity['options']) && $activity['options']['StudentSubmit'] && !$printedHomework) {
 						$activity['name'] = "Slanje zadaće";
+						$printedHomework = true;
+					}
 					else
 						continue;
 				}
