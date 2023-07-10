@@ -278,7 +278,11 @@ case "izmjena_ispita":
 					zamgerlog2("dodana ocjena", $stud_id, $predmet, $ag, $vrijednost);
 				}
 			} else {
-				print "greška ($_api_http_code): " . $result['message'];
+				if (starts_with($result['message'], "Grade exists in another year")) {
+					print "greška: Ocjena za ovog studenta je već unesena u drugoj akademskoj godini";
+				} else {
+					print "greška ($_api_http_code): " . $result['message'];
+				}
 				break;
 			}
 		} else {
