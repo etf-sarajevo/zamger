@@ -6,7 +6,7 @@
 function fix_ime($string) {
 	$result = mb_substr($string,0,1);
 	$string = strtolower($string);
-	$string = strtr($string, ["Š" => "š"]);
+	$string = strtr($string, ["Š" => "š", "Ć" => "ć", "Ž" => "ž", "Č" => "č", "Đ" => "đ"]);
 	$result .= mb_substr($string, 1);
 	return $result;
 }
@@ -48,94 +48,98 @@ function admin_misc_import_eunsa() {
 				continue;
 			}
 			
-			$prezime = trim($parts[0]);
-			$ime = trim($parts[2]);
+			$prezime = trim(fix_ime($parts[0]));
+			$ime = trim(fix_ime($parts[1]));
 			
-			$jmbg = $parts[4];
-			if ($parts[5] == "Muški") $spol='M'; else $spol='Z';
-			$oid = $parts[6];
-			$imeoca = trim($parts[7]);
-			$datum_rodjenja = substr($parts[9],0,10);
-			if ($parts[11] == "Sarajevo" && $parts[12] == "Centar" || $parts[10] == "Centar Sarajevo")
+			$jmbg = $parts[2];
+			if ($parts[3] == "Muški") $spol='M'; else $spol='Z';
+			$oid = $parts[4];
+			$imeoca = trim(fix_ime($parts[6]));
+			$datum_rodjenja = substr($parts[14],0,10);
+			if ($parts[15] == "Sarajevo" && $parts[16] == "Centar" || $parts[15] == "Centar Sarajevo")
 				$mjesto = 139;
 			else {
-				$mjesto = db_get("SELECT id FROM mjesto WHERE naziv='" . trim($parts[11]) . "'");
+				$mjesto = db_get("SELECT id FROM mjesto WHERE naziv='" . trim($parts[15]) . "'");
 				if (!$mjesto)
-					print "GRESKA: Nepoznato mjesto " . $parts[11] . " (oid $oid)<br>\n";
+					print "GRESKA: Nepoznato mjesto " . $parts[15] . " (oid $oid)<br>\n";
 			}
-			$adresa = str_replace("\\\\", ",", $parts[17]);
-			if ($parts[18] == "Sarajevo" && $parts[20] == "Centar" || $parts[18] == "Sarajevo" && $parts[20] == "Centar Sarajevo" ||  $parts[18] == "Centar Sarajevo")
+			$adresa = str_replace("\\\\", ",", $parts[18]);
+			$mjestooo = strtolower($parts[19]);
+			$opcina = strtolower($parts[20]);
+			if ($parts[19] == "Sarajevo" && $opcina == "centar" || $parts[19] == "Sarajevo" && $opcina == "centar sarajevo" ||  $mjestooo== "centar sarajevo")
 				$adresa_mjesto = 139;
-			else if ($parts[18] == "Sarajevo" && $parts[20] == "Novo Sarajevo" || $parts[18] == "Novo Sarajevo")
+			else if ($parts[19] == "Sarajevo" && $opcina == "novo sarajevo" || $parts[19] == "Novo Sarajevo")
 				$adresa_mjesto = 199;
-			else if ($parts[18] == "Sarajevo" && $parts[20] == "Novi Grad" || $parts[18] == "Sarajevo" && $parts[20] == "Novi Grad Sarajevo" || $parts[18] == "Novi Grad")
+			else if ($parts[19] == "Sarajevo" && $opcina == "novi grad" || $parts[19] == "Sarajevo" && $opcina == "novi grad sarajevo" || $mjestooo == "novi grad")
 				$adresa_mjesto = 206;
-			else if ($parts[18] == "Sarajevo" && $parts[20] == "Stari Grad" || $parts[18] == "Sarajevo" && $parts[20] == "Stari Grad Sarajevo" || $parts[18] == "Stari Grad")
+			else if ($parts[19] == "Sarajevo" && $opcina == "stari grad" || $parts[19] == "Sarajevo" && $opcina == "stari grad sarajevo" || $parts[19] == "Stari Grad")
 				$adresa_mjesto = 215;
-			else if ($parts[18] == "Sarajevo" && $parts[20] == "Vogošća")
+			else if ($parts[19] == "Sarajevo" && $parts[20] == "Vogošća")
 				$adresa_mjesto = 32;
-			else if ($parts[18] == "Sarajevo" && $parts[20] == "Ilidža")
+			else if ($parts[19] == "Sarajevo" && $parts[20] == "Ilidža")
 				$adresa_mjesto = 13;
-			else if ($parts[18] == "Sarajevo") {
+			else if ($parts[19] == "Sarajevo") {
 				print "GRESKA: Nepoznato Sarajevo " . trim($parts[20]) . " (oid $oid)<br>\n";
 			}
 			else {
-				$adresa_mjesto = db_get("SELECT id FROM mjesto WHERE naziv='" . trim($parts[18]) . "'");
+				$adresa_mjesto = db_get("SELECT id FROM mjesto WHERE naziv='" . trim($parts[19]) . "'");
 				if (!$adresa_mjesto)
-					print "GRESKA: Nepoznato adresa mjesto " . $parts[18] . " (oid $oid)<br>\n";
+					print "GRESKA: Nepoznato adresa mjesto " . $parts[19] . " (oid $oid)<br>\n";
 			}
-			$drzavljanstvo = db_get("SELECT id FROM drzava WHERE naziv LIKE '" . trim($parts[23]) . "'");
+			$drzavljanstvo = db_get("SELECT id FROM drzava WHERE naziv LIKE '" . trim($parts[22]) . "'");
 			if (!$drzavljanstvo)
-				print "GRESKA: Nepoznato drzavljanstvo " . $parts[23] . " (oid $oid)<br>\n";
-			$telefon = $parts[25];
+				print "GRESKA: Nepoznato drzavljanstvo " . $parts[22] . " (oid $oid)<br>\n";
+			$telefon = $parts[24];
 			
-			$brindexa = $parts[30];
+			$brindexa = $parts[33];
 			
 			
-			if (count($parts) > 33) {
-				$zanimanje_oca = $parts[33];
+			//if (count($parts) > 33) {
+				$zanimanje_oca = $parts[8];
 				
-				if ($parts[34] == "bez zaposlenja") {
+				if ($parts[9] == "bez zaposlenja") {
 					$status_aktivnosti_roditelja = 2;
 					$status_zaposlenosti_roditelja = 0;
-				} else if ($parts[34] == "Penzioner") {
+				} else if ($parts[9] == "Penzioner") {
 					$status_aktivnosti_roditelja = 3;
 					$status_zaposlenosti_roditelja = 0;
-				} else if (!empty(trim($parts[34]))) {
+				} else if (!empty(trim($parts[9]))) {
 					$status_aktivnosti_roditelja = 1;
 					$status_zaposlenosti_roditelja = 2;
 				} else {
 					$status_aktivnosti_roditelja = 0;
 					$status_zaposlenosti_roditelja = 0;
 				}
-				$ime_majke = fix_ime($parts[35]);
-				if (upitnik_like($parts[0], $parts[36]))
+				$ime_majke = fix_ime($parts[10]);
+				if (upitnik_like($parts[0], $parts[11]))
 					$prezime_majke = $prezime;
 				else
-					$prezime_majke = fix_ime($parts[36]);
-				if ($parts[48] == "Bošnjaci")
+					$prezime_majke = fix_ime($parts[11]);
+				if ($parts[23] == "Bošnjaci")
 					$nacionalnost = 1;
-				else if ($parts[48] == "Srbi")
+				else if ($parts[23] == "Srbi")
 					$nacionalnost = 2;
-				else if ($parts[48] == "Hrvat")
+				else if ($parts[23] == "Hrvat")
 					$nacionalnost = 3;
-				else if ($parts[48] == "Ostali - Bosanci")
+				else if ($parts[23] == "Ostali - Bosanci")
 					$nacionalnost = 9;
 				else
 					$nacionalnost = 6;
 				$sql = "INSERT INTO osoba SET id=$id, prezime='$prezime', ime='$ime', jmbg='$jmbg', spol='$spol', imeoca='$imeoca', prezimeoca='$prezime', imemajke='$ime_majke', prezimemajke='$prezime_majke', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja='$mjesto', adresa='$adresa', adresa_mjesto='$adresa_mjesto', drzavljanstvo=$drzavljanstvo, telefon='$telefon', brindexa='$brindexa', zanimanje_roditelja='$zanimanje_oca', status_aktivnosti_roditelja=$status_aktivnosti_roditelja, status_zaposlenosti_roditelja=$status_zaposlenosti_roditelja, nacionalnost=$nacionalnost, oid='$oid'";
-			} else
+			//} else
 			
-			$sql = "INSERT INTO osoba SET id=$id, prezime='$prezime', ime='$ime', jmbg='$jmbg', spol='$spol', imeoca='$imeoca', prezimeoca='$prezime', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja='$mjesto', adresa='$adresa', adresa_mjesto='$adresa_mjesto', drzavljanstvo=$drzavljanstvo, telefon='$telefon', brindexa='$brindexa', oid='$oid'";
+			//$sql = "INSERT INTO osoba SET id=$id, prezime='$prezime', ime='$ime', jmbg='$jmbg', spol='$spol', imeoca='$imeoca', prezimeoca='$prezime', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja='$mjesto', adresa='$adresa', adresa_mjesto='$adresa_mjesto', drzavljanstvo=$drzavljanstvo, telefon='$telefon', brindexa='$brindexa', oid='$oid'";
 			
 			if ($f) db_query($sql);
 			
 			// Škola
-			if (count($parts) > 50) {
-				$ime_skole = str_replace("?", "%", $parts[51]);
+			//if (count($parts) > 50) {
+				$ime_skole = str_replace("?", "%", $parts[26]);
 				$ime_skole = str_replace("\"", "", $ime_skole);
 				$skola = false;
-				if ($ime_skole == "Srednja medicinska škola - Jezero Sarajevo")
+				if (is_numeric($ime_skole))
+					$skola = intval($ime_skole);
+				else if ($ime_skole == "Srednja medicinska škola - Jezero Sarajevo")
 					$skola = 920;
 				else if ($ime_skole == "Franjevačka klasična gimnazija Visoko")
 					$skola = 579;
@@ -149,7 +153,7 @@ function admin_misc_import_eunsa() {
 					
 					if ($f) db_query($sql);
 				}
-			}
+			//}
 			
 			// Login
 			
@@ -161,6 +165,7 @@ function admin_misc_import_eunsa() {
 				$login = substr($ime_login,0,1).substr($prezime_login,0,9) . $br;
 				$br++;
 			} while(in_array($login, $svi_logini));
+			array_push($svi_logini, $login);
 			
 			$sql = "INSERT INTO auth SET id=$id, login='$login', aktivan=1;";
 			
@@ -175,7 +180,7 @@ function admin_misc_import_eunsa() {
 			$email = $login . "@etf.unsa.ba";
 			$sql = "INSERT INTO email SET osoba=$id, adresa='$email', sistemska=1;";
 			if ($f) db_query($sql);
-			$email2 = $parts[26];
+			$email2 = $parts[25];
 			if (!empty(trim($email2))) {
 				$sql = "INSERT INTO email SET osoba=$id, adresa='$email2', sistemska=0;";
 				if ($f) db_query($sql);
@@ -183,28 +188,28 @@ function admin_misc_import_eunsa() {
 			
 			// Upis u prvu
 			
-			if ($parts[27] == "Redovni samofinansirajući studij")
+			if ($parts[30] == "Redovni samofinansirajući studij")
 				$nacin_studiranja = 3;
-			else if ($parts[27] == "Redovni studij")
+			else if ($parts[30] == "Redovni studij")
 				$nacin_studiranja = 1;
 			else {
 				$nacin_studiranja = 4;
-				print "GRESKA: Nepoznat način studiranja " . $parts[27] . "<br>\n";
+				print "GRESKA: Nepoznat način studiranja " . $parts[30] . "<br>\n";
 			}
 			
-			if ($parts[28] == "Računarstvo i informatika")
+			if ($parts[31] == "Računarstvo i informatika")
 				$studij = 2;
-			else if ($parts[28] == "Elektroenergetika")
+			else if ($parts[31] == "Elektroenergetika")
 				$studij = 4;
-			else if ($parts[28] == "Automatika i elektronika")
+			else if ($parts[31] == "Automatika i elektronika")
 				$studij = 3;
-			else if ($parts[28] == "Telekomunikacije")
+			else if ($parts[31] == "Telekomunikacije")
 				$studij = 5;
-			else if ($parts[28] == "Razvoj softvera")
+			else if ($parts[31] == "Razvoj softvera")
 				$studij = 22;
 			else {
 				$studij = 22;
-				print "GRESKA: Nepoznat studij " . $parts[28] . "<br>\n";
+				print "GRESKA: Nepoznat studij " . $parts[31] . "<br>\n";
 			}
 			
 			print "<tr><td>$id</td><td>$ime</td><td>$prezime</td><td>$imeoca</td><td>$login</td><td>$brindexa</td><td>$stari_login</td><td>$jmbg</td><td>$oid</td></tr>\n";
