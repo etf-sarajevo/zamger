@@ -91,9 +91,9 @@ if ($studij_ciklus == 2 /* zašto samo 2? */ && $param_ciklus == 0) {
 ?>
 <img src="static/images/content/ETF-memorandum.png">
 <p>&nbsp;</p>
-<p>Na osnovu člana 169. Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99 i 61/22), člana 76. (4) Zakona o visokom
-obrazovanju (Službene novine Kantona Sarajevo, broj 36/22) i člana 239. stav (1) Statuta
-Univerziteta u Sarajevu od 13.12.2018. godine, Elektrotehnički fakultet u Sarajevu izdaje</p>
+<p>Na osnovu člana 169. Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99 i 61/22), člana 76. Zakona o visokom
+obrazovanju (Službene novine Kantona Sarajevo, broj 36/22) i člana 279. Statuta
+Univerziteta u Sarajevu od 26.07.2023. godine, Elektrotehnički fakultet u Sarajevu izdaje</p>
 
 <h2>Uvjerenje o prepisu ocjena<?
 if ($param_studijska_godina > 0) print " za $param_studijska_godina. godinu studija";
