@@ -20,7 +20,7 @@ function nastavnik_tip() {
 	// Da li korisnik ima pravo ući u modul?
 	
 	if ($_api_http_code == "403") {
-		zamgerlog("nastavnik/kvizovi privilegije (predmet pp$predmet)",3);
+		zamgerlog("nastavnik/tip privilegije (predmet pp$predmet)",3);
 		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
@@ -172,6 +172,13 @@ function nastavnik_tip() {
 		
 		// Završne operacije u vezi primjene opcija
 		if (param('subakcija') != "") {
+			if (strlen(trim($cact->name)) == 0) {
+				niceerror("Niste unijeli naziv aktivnosti");
+				?>
+				<p>Naziv aktivnosti je obavezno polje.</p>
+				<?
+				return;
+			}
 			$result = api_call("course/$predmet/$ag/activity/$aktivnost", $cact, "PUT");
 			if ($_api_http_code == "201") {
 				nicemessage("Opcije aktivnosti su promijenjene");
@@ -197,6 +204,9 @@ function nastavnik_tip() {
 			}
 			else {
 				niceerror("Neuspješna izmjena aktivnosti");
+				?>
+					<p>Poruka greške: <?=$result['message']?></p>
+				<?
 				api_report_bug($result, $cact);
 			}
 			return;
@@ -502,6 +512,13 @@ function nastavnik_tip() {
 		}
 		
 		if (param('akcija') == "izmijeni_potvrda") {
+			if (strlen(trim($cact->name)) == 0) {
+				niceerror("Niste unijeli naziv aktivnosti");
+				?>
+				<p>Naziv aktivnosti je obavezno polje.</p>
+				<?
+				return;
+			}
 			$result = api_call("course/$predmet/$ag/activity/$aktivnost", $cact, "PUT");
 			if ($_api_http_code == "201") {
 				nicemessage("Aktivnost je uspješno izmijenjena");
@@ -519,9 +536,19 @@ function nastavnik_tip() {
 			}
 			else {
 				niceerror("Neuspješna izmjena aktivnosti");
+				?>
+				<p>Poruka greške: <?=$result['message']?></p>
+				<?
 				api_report_bug($result, $cact);
 			}
 		} else {
+			if (strlen(trim($cact->name)) == 0) {
+				niceerror("Niste unijeli naziv aktivnosti");
+				?>
+				<p>Naziv aktivnosti je obavezno polje.</p>
+				<?
+				return;
+			}
 			$result = api_call("course/$predmet/$ag/activity", $cact, "POST");
 			if ($_api_http_code == "201") {
 				nicemessage("Aktivnost je uspješno dodata");
@@ -539,6 +566,9 @@ function nastavnik_tip() {
 			}
 			else {
 				niceerror("Neuspješno dodavanje aktivnosti");
+				?>
+				<p>Poruka greške: <?=$result['message']?></p>
+				<?
 				api_report_bug($result, $cact);
 			}
 		}
@@ -555,6 +585,7 @@ function nastavnik_tip() {
 		<input type="hidden" name="aktivnost" value="<?=$aktivnost?>">
 		<input type="hidden" name="akcija" value="izmijeni_potvrda">
 		<label for="naziv">Naziv aktivnosti:</label> <input type="text" name="naziv" id="naziv" value="<?=$foundActivity['name']?>"><br>
+		<span class="opis">Naziv aktivnosti je obavezno unijeti</span><br>
 		<label for="tip_aktivnosti">Tip aktivnosti:</label> <select name="tip_aktivnosti" id="tip_aktivnosti">
 			<option value="0">Fiksni bodovi</option>
 			<?
@@ -661,6 +692,7 @@ function nastavnik_tip() {
 		<input type="hidden" name="ag" value="<?=$ag?>">
 		<input type="hidden" name="akcija" value="dodaj">
 		<label for="naziv">Naziv aktivnosti:</label> <input type="text" name="naziv" id="naziv"><br>
+		<span class="opis">Naziv aktivnosti je obavezno unijeti</span><br>
 		<label for="tip_aktivnosti">Tip aktivnosti:</label> <select name="tip_aktivnosti" id="tip_aktivnosti">
 			<option value="0">Fiksni bodovi</option>
 			<?
