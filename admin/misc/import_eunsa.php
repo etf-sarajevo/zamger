@@ -30,6 +30,8 @@ function admin_misc_import_eunsa() {
 		$id = db_get("SELECT MAX(id) FROM osoba") + 1;
 		$prethodna_godina = db_get("SELECT id FROM akademska_godina WHERE aktuelna=1");
 		$godina = $prethodna_godina + 1;
+		$postoji_li = db_get("SELECT COUNT(*) FROM akademska_godina WHERE id=$godina");
+		if (!$postoji_li) $godina = $prethodna_godina;
 		$i = 0;
 		
 		$pocni_od = int_param('pocni_od');
