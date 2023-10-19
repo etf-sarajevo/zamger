@@ -41,19 +41,19 @@ function user_box() {
 
 ?>
 
-<div id="kocka" style="position:absolute;right:10px;top:55px">
-	<table style="border:1px;border-style:solid"><tr><td>
-	<img src="static/images/fnord.gif" width="200" height="1" alt="fnord"><br>
-	<img src="static/images/16x16/<?=$slika?>" border="0" alt="fnord"> <?=$person['name']?> <?=$person['surname']?><br>
-	<?=$unsu?><a href="?sta=common/inbox">Poruke</a> * <a href="?sta=common/profil">Profil</a> * <a href="?sta=logout">Odjava</a>
-	</td></tr></table>
-</div>
+<!--<div id="kocka" style="position:absolute;right:10px;top:55px">-->
+<!--	<table style="border:1px;border-style:solid"><tr><td>-->
+<!--	<img src="static/images/fnord.gif" width="200" height="1" alt="fnord"><br>-->
+<!--	<img src="static/images/16x16/--><?//=$slika?><!--" border="0" alt="fnord"> --><?//=$person['name']?><!-- --><?//=$person['surname']?><!--<br>-->
+<!--	--><?//=$unsu?><!--<a href="?sta=common/inbox">Poruke</a> * <a href="?sta=common/profil">Profil</a> * <a href="?sta=logout">Odjava</a>-->
+<!--	</td></tr></table>-->
+<!--</div>-->
 
 <?
 }
 
 
-// Prikazi skriveni IFRAME za AJAH i layer u kojem se ispisuju poruke 
+// Prikazi skriveni IFRAME za AJAH i layer u kojem se ispisuju poruke
 // name i id IFRAMEa je $naziv, a layera je $naziv-info
 function ajah_box() {
 	global $zamger_ajah_inited;
@@ -308,9 +308,9 @@ function cool_box($izvrsi) {
 
 	// U svim browserima pritisak na tipku ENTER ce pozvati metodu onchange,
 	// osim na IE7/IE8 gdje pritisak na ENTER ne proizvodi nikakav event ako
-	// nije definisana propisna forma. Iz tog razloga moramo koristiti 
+	// nije definisana propisna forma. Iz tog razloga moramo koristiti
 	// onkeypress da uhvatimo ENTER. Sto se tice klika pored, browseri ce
-	// pozvati onchange i/ili onblur redoslijedom koji je nemoguce 
+	// pozvati onchange i/ili onblur redoslijedom koji je nemoguce
 	// predvidjeti :( zato moramo izvrsiti istu akciju u oba.
 
 	// U svim testiranim browserima onkeypress ce se izvrsiti prije onchange
@@ -367,7 +367,7 @@ function cool_box($izvrsi) {
 		// Pošto se onblur/onchange izvršava poslije onkeypress, sada je
 		// sigurno da poništimo vrijednost ove varijable, jer je u slučaju
 		// klika pored kocke ništa neće poništiti!
-		zamger_coolbox_origcaller = false; 
+		zamger_coolbox_origcaller = false;
 	}
 
 	function coolboxsubmit() {
@@ -393,9 +393,9 @@ function cool_box($izvrsi) {
 	// Svrha ove funkcije je da uhvati ENTER tipku u IE7/IE8
 	function coolboxkey(e) {
 		var coolboxedit = document.getElementById("coolboxedit");
-		if (e.keyCode==13 && coolboxedit.value!=zamger_coolbox_origvalue) { 
+		if (e.keyCode==13 && coolboxedit.value!=zamger_coolbox_origvalue) {
 			// Ne saljemo podatke ako nije doslo do promjene
-			coolboxsubmit(); 
+			coolboxsubmit();
 		}
 	}
 	</script>
@@ -535,7 +535,7 @@ function horizontalni_meni($fj) {
 	$k=0;
 	foreach ($registry as $r) {
 		if(count($r) < 5 || $r[5] != 0) continue;
-		if (strstr($r[0],$sekcija)) { 
+		if (strstr($r[0],$sekcija)) {
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#cccccc";
 			?><td height="20" width="100" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#ffffff'" onmouseout="this.bgColor='<?=$bgcolor?>'">
 				<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[2]?></a>

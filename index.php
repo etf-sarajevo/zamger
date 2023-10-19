@@ -83,7 +83,7 @@ db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 // Zabranjene IP adrese
 if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER) && $_SERVER['HTTP_X_FORWARDED_FOR'])
-	$ip_adresa = $_SERVER['HTTP_X_FORWARDED_FOR']; 
+	$ip_adresa = $_SERVER['HTTP_X_FORWARDED_FOR'];
 else
 	$ip_adresa = $_SERVER['REMOTE_ADDR'];
 if (in_array($ip_adresa, $conf_banned_ips)) {
@@ -265,7 +265,7 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 					zamgerlog("sesija istekla $oldsta", 3);
 					zamgerlog2("sesija istekla");
 				}
-				
+
 				$sta=""; // kako se ne bi prikazivale ostale greske, navigacija itd.
 			}
 			break;
@@ -347,8 +347,29 @@ if ($userid>0) {
 <head>
 	<title><?=$naslov?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 	<link href="static/css/zamger.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="static/css/print.css" type="text/css" media="print">
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
+	<link href="static/css/includes/libraries/select-2.css" rel="stylesheet" type="text/css">
+	<link href="static/css/includes/template/style.css" rel="stylesheet" type="text/css">
+
+	<script src="https://kit.fontawesome.com/cdf2a0a58b.js"></script>
+
+	<!-- Javascript scripts -->
+	<script src="https://kit.fontawesome.com/cdf2a0a58b.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/js/select2.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script src="static/js/includes/libraries/notify.js"></script>
+    <script src="static/js/includes/main.js"></script>
+	<script type="text/javascript" src="static/js/stablo.js"></script> <!-- Cesto koristena skripta -->
+	
 	<?=$rsslink?>
 </head>
 <?
@@ -434,27 +455,32 @@ if (int_param('loginforma') == 1 && $userid>0) {
 ?>
 <body style="margin:0px" bgcolor="#FFFFFF"<?=$onload_funkcija?>>
 
-<script type="text/javascript" src="static/js/stablo.js"></script> <!-- Cesto koristena skripta -->
+<!-- Require top menu -->
+<?php require_once 'common/template/t-menu.php'; ?>
+<?php // require_once 'common/template/l-menu.php';  ?>
 
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr bgcolor="#BBBBFF">
+<br><br><br><br><br>
+
+
+<!--<table width="100%" border="0" cellspacing="0" cellpadding="0">-->
+<!--	<tr bgcolor="#BBBBFF">-->
 		<!--td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr-->
-			<td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href="index.php"><img src="static/images/<?=$conf_logo_institucije?>" width="50" height="50" border="0" alt="<?=$conf_skr_naziv_institucije?>"></a>
-			</td><td width="50%" align="right">
-			<font color="#FFFFFF" size="5">
-			<b><a href="index.php"><font color="#FFFFFF"><?=$conf_appname?> <?=$conf_appversion?></font></a>&nbsp;</b></font><br>
-			<font color="#FFFFFF" size="1">
-			<a href="static/doc/zamger-uputstva-42-nastavnik.pdf" target="_new">
-			<img src="static/images/16x16/docs.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Uputstva">&nbsp;
-			Uputstva</a>&nbsp;&nbsp;&nbsp;
-			<a href="https://github.com/etf-sarajevo/zamger/issues" target="_new">
-			<img src="static/images/16x16/bug.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Prijavite bug">&nbsp;
-			Prijavite bug</a>&nbsp;&nbsp;&nbsp;</font>
-			</td>
+<!--			<td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;-->
+<!--			<a href="index.php"><img src="static/images/--><?//=$conf_logo_institucije?><!--" width="50" height="50" border="0" alt="--><?//=$conf_skr_naziv_institucije?><!--"></a>-->
+<!--			</td><td width="50%" align="right">-->
+<!--			<font color="#FFFFFF" size="5">-->
+<!--			<b><a href="index.php"><font color="#FFFFFF">--><?//=$conf_appname?><!-- --><?//=$conf_appversion?><!--</font></a>&nbsp;</b></font><br>-->
+<!--			<font color="#FFFFFF" size="1">-->
+<!--			<a href="static/doc/zamger-uputstva-42-nastavnik.pdf" target="_new">-->
+<!--			<img src="static/images/16x16/docs.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Uputstva">&nbsp;-->
+<!--			Uputstva</a>&nbsp;&nbsp;&nbsp;-->
+<!--			<a href="https://github.com/etf-sarajevo/zamger/issues" target="_new">-->
+<!--			<img src="static/images/16x16/bug.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Prijavite bug">&nbsp;-->
+<!--			Prijavite bug</a>&nbsp;&nbsp;&nbsp;</font>-->
+<!--			</td>-->
 		<!--/tr></table></td-->
-	</tr>
-</table>
+<!--	</tr>-->
+<!--</table>-->
 
 <table width="100%" border="0" cellspacing="0" cellpadding="4">
 	<tr><td valign="top" align="left">
@@ -545,16 +571,16 @@ if ($found != 1) {
 
 // Promjena uloge korisnika
 if ($userid>0) {
-	if ($user_student && !strstr($sta,"student/"))
-		print "<a href=\"?sta=student/intro\">Studentska stranica</a><br>\n";
-	if ($user_nastavnik && !strstr($sta,"saradnik/") && !strstr($sta,"nastavnik/"))
-		print "<a href=\"?sta=saradnik/intro\">Spisak predmeta i grupa</a><br>\n";
-	if ($user_studentska && !strstr($sta,"studentska/"))
-		print "<a href=\"?sta=studentska/intro\">Studentska služba</a><br>\n";
-	if ($user_siteadmin && !strstr($sta,"admin/"))
-		print "<a href=\"?sta=admin/intro\">Site admin</a><br>\n";
-	if ($user_studentska && !$user_siteadmin && !$user_nastavnik && !$user_student && strstr($sta,"studentska/"))
-		print "<p>&nbsp;</p>";
+//	if ($user_student && !strstr($sta,"student/"))
+//		print "<a href=\"?sta=student/intro\">Studentska stranica</a><br>\n";
+//	if ($user_nastavnik && !strstr($sta,"saradnik/") && !strstr($sta,"nastavnik/"))
+//		print "<a href=\"?sta=saradnik/intro\">Spisak predmeta i grupa</a><br>\n";
+//	if ($user_studentska && !strstr($sta,"studentska/"))
+//		print "<a href=\"?sta=studentska/intro\">Studentska služba</a><br>\n";
+//	if ($user_siteadmin && !strstr($sta,"admin/"))
+//		print "<a href=\"?sta=admin/intro\">Site admin</a><br>\n";
+//	if ($user_studentska && !$user_siteadmin && !$user_nastavnik && !$user_student && strstr($sta,"studentska/"))
+//		print "<p>&nbsp;</p>";
 }
 
 
