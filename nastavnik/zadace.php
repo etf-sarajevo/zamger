@@ -6,7 +6,7 @@
 
 function nastavnik_zadace() {
 
-	global $userid, $_api_http_code, $conf_files_path, $conf_backend_url_client;
+	global $userid, $_api_http_code, $conf_files_path, $conf_backend_url_client, $conf_script_path;
 	
 	require_once("lib/autotest.php");
 	require_once("lib/zamgerui.php"); // mass_input
@@ -321,6 +321,45 @@ function nastavnik_zadace() {
 			api_report_bug($result, []);
 		}
 		return;
+	}
+	
+	// Konverzija formata autotesta
+	if ($_GET['akcija'] == "convert_autotest") {
+		$atId = intval($_GET['atid']);
+		nicemessage("Konvertujem autotest $atId iz verzije 2 u verziju 3...");
+		
+		$autotestFile = api_call("homework/files/$atId", [], "GET", false, false);
+		$tmpfname = tempnam("/tmp", "ATCONVERT");
+		$tmpfname2 = tempnam("/tmp", "ATCONVERT");
+		$tmpdir = tempnam("/tmp", "ATCONVERT");
+		unlink($tmpdir);
+		mkdir($tmpdir);
+		$tmpfname3 = $tmpdir . "/autotest3";
+		file_put_contents($tmpfname, $autotestFile);
+		
+		`php $conf_script_path/lib/autotester/tools/convert_asan.php $tmpfname $tmpfname2`;
+		`php $conf_script_path/lib/autotester/tools/convert_v2_v3.php $tmpfname2 $tmpfname3`;
+		
+		$result = api_file_upload("homework/files/$atId/upload", "homeworkFileUpload", $tmpfname3);
+		if ($_api_http_code == "201") {
+			nicemessage("Uspješno konvertovan autotest");
+			?>
+			<script language="JavaScript">
+                setTimeout(function() { location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&_lv_nav_id=<?=$edit_zadaca?>'; }, 1000);
+			</script>
+			<?
+			
+		} else {
+			niceerror("Neuspješno slanje prateće datoteke");
+			api_report_bug($result, []);
+		}
+		
+		unlink($tmpfname);
+		unlink($tmpfname2);
+		unlink($tmpfname3);
+		rmdir($tmpdir);
+		
+		return 0;
 	}
 	
 	
@@ -832,17 +871,36 @@ function nastavnik_zadace() {
 					});
 				}
 				
-				function doOpenAutotestGenerator(fileID, assignNo) {
+				function doOpenAutotestGenerator(fileID, assignNo, filename) {
 					ajax_api_start( "homework/files/"+fileID, "GET", [], (obj) => {
-						window.localStorage.setItem('.autotest-content', JSON.stringify(obj));
-						const newWindow = Helpers.openGenerator('lib/autotest-genv2/html/index.html','<?=$wsurl?>', true);
-						
-						newWindow.addEventListener('load', () => {
-							const button = newWindow.document.getElementById('export-button');
-                            button.addEventListener("click", () => {
-								updateAutotestFile(fileID, assignNo);
-							});
-						}, false);
+                        let version = 3;
+                        if (filename == 'autotest2' || (obj.hasOwnProperty('version') && obj.version == 2))
+                            version = 2;
+						if (obj.hasOwnProperty('tests') && obj.tests.length > 0 && !obj.tests[0].hasOwnProperty('tools'))
+                            version = 2;
+                        if (version == 2) {
+                            let convert = confirm("Autotest format verzija 2 je detektovana. Želite li da ga konvertujete u verziju 3?");
+                            if (convert) {
+                                location.href = "<?=str_replace("&amp;", "&", genuri())?>&akcija=convert_autotest&atid=" + fileID;
+								return;
+							}
+						}
+                        if (version == 2) {
+                            window.localStorage.setItem('.autotest-content', JSON.stringify(obj));
+                            const newWindow = Helpers.openGenerator('lib/autotest-genv2/html/index.html','<?=$wsurl?>', true);
+
+                            newWindow.addEventListener('load', () => {
+                                const button = newWindow.document.getElementById('export-button');
+                                button.addEventListener("click", () => {
+                                    updateAutotestFile(fileID, assignNo);
+                                });
+                            }, false);
+						} else {
+                            window.localStorage.setItem('.autotest-content', JSON.stringify(obj));
+                            window.localStorage.removeItem('.autotest-save-callback');
+                            let newWindow = window.open("lib/autotester/tools/editor/editor.html", "_blank");
+                            newWindow.globalSaveCallback = function() { updateAutotestFile(fileID, assignNo); }
+                        }
 					}, (json, status, url) => {
 						alert("Greška prilikom preuzimanja autotest fajla sa servera: " + status);
 						console.log(json);
@@ -858,14 +916,15 @@ function nastavnik_zadace() {
 				<li>Zadatak <?=$i?>:
 				<?
 				$fileID = false;
+				$filename = "";
 				foreach($homeworkFiles as $hwf) {
-					if ($hwf['type'] == "autotest" && $hwf['assignNo'] == $i) $fileID = $hwf['id'];
+					if ($hwf['type'] == "autotest" && $hwf['assignNo'] == $i) { $fileID = $hwf['id']; $filename = $hwf['filename']; }
 				}
 				if (!$fileID) {
 					niceerror("Nije kreiran default autotest fajl. Kontaktirajte administratora");
 				} else {
 					?>
-					<button onclick="doOpenAutotestGenerator(<?=$fileID?>, <?=$i?>) ;" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Definiši testove</button>&nbsp;
+					<button onclick="doOpenAutotestGenerator(<?=$fileID?>, <?=$i?>, '<?=$filename?>') ;" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Definiši testove</button>&nbsp;
 					<button onclick="location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$izabrana?>&zadatak=<?=$i?>&akcija=resetStatus';" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Zatraži retestiranje</button>&nbsp;
 					<button onclick="location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$izabrana?>&zadatak=<?=$i?>&akcija=bodujSve';" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Automatsko bodovanje</button>&nbsp;
 					</li>
