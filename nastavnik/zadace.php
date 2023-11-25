@@ -901,7 +901,7 @@ function nastavnik_zadace() {
 	
 	if ($izabrana != 0) {
 		foreach($homeworkFiles as $homeworkFile) {
-			if ($homeworkFile['type'] == "autotest") continue; // Don't show autotest files
+			//if ($homeworkFile['type'] == "autotest") continue; // Don't show autotest files
 			
 			?>
 			<form action="index.php" method="POST">
