@@ -59,7 +59,7 @@ function autotest_tabela($student, $zadaca, $zadatak, $nastavnik, $rok_za_slanje
 	$task_enc = htmlspecialchars(json_encode($task));
 	$result_enc = htmlspecialchars(json_encode($result));
 	
-	$rezultat = '<form action="lib/render/render.php" method="POST" id="details_form">
+	$rezultat = '<form action="lib/autotester/tools/render/render.php" method="POST" id="details_form">
 	<input type="hidden" name="language" value="bs">
 	<input type="hidden" name="task" value="' . $task_enc . '">
 	<input type="hidden" name="result" value="' . $result_enc . '">
