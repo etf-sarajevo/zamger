@@ -41,9 +41,11 @@ $limit_prosjek = intval($_REQUEST['limit_prosjek']);
 $studij = intval($_REQUEST['studij']);
 $wherestudij=$whereprosliciklus="";
 if ($studij>0) {
-	$q20 = db_query("select naziv from studij where id=$studij");
+	$q20 = db_query("select s.naziv, ts.ciklus from studij s, tipstudija ts where s.id=$studij and s.tipstudija=ts.id");
 	?><h3><?=db_result($q20,0,0)?></h3><?
 	$wherestudij="and ss.studij=$studij";
+	if (db_result($q20,0,1) == 2)
+		$whereprosliciklus = "and ts.ciklus=2";
 
 } else if ($studij == -3) {
 	$ciklus = 2;
@@ -105,15 +107,21 @@ while ($r1 = db_fetch_row($q1)) {
 	$brindexa[$id_studenta]=$r1[3];
 	$nacinstudiranja[$id_studenta]=$r1[4];
 	
-	$q2 = db_query("SELECT DISTINCT ko.ocjena, pp.ects, ss.semestar, pp.naziv
+	$q2 = db_query("SELECT DISTINCT ko.ocjena, pp.ects, ss.semestar, pp.naziv, ss.plan_studija, pp.id
 	FROM konacna_ocjena as ko,  student_studij ss, studij as st, tipstudija as ts, pasos_predmeta pp
 	WHERE ko.student=$id_studenta AND ss.student=$id_studenta AND ko.ocjena>5 AND ko.akademska_godina<=$ak_god AND ko.pasos_predmeta=pp.id AND ss.akademska_godina=ko.akademska_godina AND ss.semestar MOD 2 = 1 AND ss.studij=st.id AND st.tipstudija=ts.id $whereprosliciklus");
 	$suma=0; $broj=0; $sumaects=0;
 	while ($r2 = db_fetch_row($q2)) {
 		$sumaects += $r2[1];
 		if ($r2[0] > 10 || $r2[0] < 5) continue;
-		if ($samo_tekuca_gs)
-			if ($r2[2] < $godinastudija*2-1) continue;
+		if ($samo_tekuca_gs) {
+			$plan_studija = $r2[4];
+			$pasos_predmeta = $r2[5];
+			$semestar = db_get("SELECT semestar FROM plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.pasos_predmeta=$pasos_predmeta");
+			if ($semestar == 0)
+				$semestar = db_get("SELECT semestar FROM plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id and pis.pasos_predmeta=$pasos_predmeta");
+			if ($semestar < $godinastudija * 2 - 1) continue;
+		}
 		$suma += $r2[0]; $broj++;
 		if (!array_key_exists($r2[2], $sumasemestar)) $sumasemestar[$r2[2]] = [];
 		if (!array_key_exists($id_studenta, $sumasemestar[$r2[2]])) {
