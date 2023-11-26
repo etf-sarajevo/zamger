@@ -472,7 +472,7 @@ function ws_export() {
 			$semestar = int_param('semestar');
 			
 			// Naziv studija i akademske godine
-			$podaci_studija = db_query_assoc("SELECT s.id id_studija, ag.naziv godina, ss.nacin_studiranja nacin, ss.ponovac
+			$podaci_studija = db_query_assoc("SELECT s.id id_studija, ag.naziv godina, ss.nacin_studiranja nacin, ss.ponovac, ss.status_studenta
 				FROM student_studij ss, studij s, akademska_godina ag, nacin_studiranja ns 
 				WHERE ss.student=$id_studenta AND ss.studij=s.id AND s.id=$id_studija and ss.akademska_godina=ag.id AND ag.id=$id_godine");
 			if (!$podaci_studija) { 
@@ -491,6 +491,18 @@ function ws_export() {
 				$rezultat['data'] = $odgovor;
 				print json_encode($rezultat);
 				return;
+			}
+			
+			if ($podaci_studija['status_studenta'] == 1) {
+				if ($semestar % 2 == 0) {
+					$odgovor['tekst'] = 'Student je već upisan na apsolventski semestar u zimskom semestru';
+					$odgovor['status'] = 'ok';
+					// Prekidamo sve
+					$rezultat['data'] = $odgovor;
+					print json_encode($rezultat);
+					return;
+				}
+				$semestar = 20; // Apsolventski semestar u ISSSu
 			}
 			
 			$isss_data = array ( 
@@ -548,7 +560,10 @@ function ws_export() {
 				}
 				else if ($warning['code'] == 'student_already_enrolled') {
 					if ($warning['semester'] == $semestar) {
-						$odgovor['tekst'] = "Student već upisan u $semestar. semestar";
+						if ($semestar == 20)
+							$odgovor['tekst'] = "Student već upisan u apsolventski semestar";
+						else
+							$odgovor['tekst'] = "Student već upisan u $semestar. semestar";
 						$odgovor['status'] = 'ok';
 					} else {
 						$odgovor['tekst'] = 'Student upisan u pogrešan semestar '.$warning['semester'];
