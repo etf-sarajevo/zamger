@@ -17,6 +17,7 @@ Elektrotehnički fakultet Sarajevo</p>
 $ime_oca = param('ime_oca');
 $spol = param('spol');
 $jmbg = param('jmbg');
+$datum_rodjenja = param('datum_rodjenja');
 $vanredni = param('vanredni');
 $nacin_studiranja = param('nacin_studiranja');
 $login = param('login');
@@ -64,6 +65,7 @@ $kolone = "";
 if ($ime_oca) $kolone .= ", o.imeoca";
 if ($spol) $kolone .= ", o.spol";
 if ($jmbg) $kolone .= ", o.jmbg";
+if ($datum_rodjenja) $kolone .= ", o.datum_rodjenja";
 if ($nacin_studiranja) $kolone .= ", ns.naziv as nacin";
 if ($login) $kolone .= ", a.login";
 if ($brindexa) $kolone .= ", o.brindexa";
@@ -120,6 +122,7 @@ if ($tabelarno) {
 	print "<th>Ime</th>";
 	if ($spol) print "<th>Spol</th>";
 	if ($jmbg) print "<th>JMBG</th>";
+	if ($datum_rodjenja) print "<th>Datum rođenja</th>";
 	if ($nacin_studiranja) print "<th>Način studiranja</th>";
 	if ($login) print "<th>Login</th>";
 	if ($brindexa) print "<th>Broj indeksa</th>";
@@ -141,6 +144,7 @@ while ($osoba = db_fetch_assoc($q30)) {
 			print "<td>".$osoba['spol']."</td>";
 		}
 		if ($jmbg) print "<td>".$osoba['jmbg']."</td>";
+		if ($datum_rodjenja) print "<td>".date ("j. n. Y", db_timestamp($osoba['datum_rodjenja']))."</td>";
 		if ($nacin_studiranja) print "<td>".$osoba['nacin']."</td>";
 		if ($login) print "<td>".$osoba['login']."</td>";
 		if ($mjesto_rodjenja) print "<td>".$osoba['mjestorodj']."</td>";
@@ -166,6 +170,7 @@ while ($osoba = db_fetch_assoc($q30)) {
 			print " (".$osoba['spol'].") ";
 		}
 		if ($jmbg) print " (".$osoba['jmbg'].") ";
+		if ($datum_rodjenja) print " (" . date ("j. n. Y", db_timestamp($osoba['datum_rodjenja'])) . ") ";
 		if ($nacin_studiranja) print " - ".$osoba['nacin']." ";
 		if ($login) print " - ".$osoba['login']." ";
 		if ($mjesto_rodjenja) print "(".$osoba['mjestorodj'].")";

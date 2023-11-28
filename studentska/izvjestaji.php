@@ -306,6 +306,7 @@ if (param('akcija') == "svi_studenti") {
 	<p><input type="checkbox" name="ime_oca">Ime oca<br />
 	<input type="checkbox" name="spol">Spol<br />
 	<input type="checkbox" name="jmbg">JMBG<br />
+	<input type="checkbox" name="datum_rodjenja">Datum rođenja<br />
 	<input type="checkbox" name="nacin_studiranja">Način studiranja (redovni, samofinansirajući...)<br />
 	<input type="checkbox" name="vanredni">Uključi i vanredne studente<br />
 	<input type="checkbox" name="adresa_mjesto">Mjesto boravka<br />
