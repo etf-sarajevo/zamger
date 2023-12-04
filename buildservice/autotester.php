@@ -160,6 +160,7 @@ else if ($_REQUEST['action'] == "assignProgram") {
 
 else if ($_REQUEST['action'] == "getTask") {
 	$task = intval($_REQUEST['id']);
+	if ($task == 0) $task = intval($_REQUEST['task']);
 	$zadaca = intval($task/100);
 	$zadatak = $task % 100;
 	
@@ -482,10 +483,14 @@ else if ($_REQUEST['action'] == "setResult") {
 			// Ako da, uzimamo njegove poruke
 			$output = "";
 			$program_status = $data['status']; // polje status, 4 = završeno testiranje
-			if (array_key_exists("1", $data['test_results'])) {
-				if (array_key_exists("parsed_output", $data['test_results']["1"]['tools']['compile'])) {
+			if (array_key_exists("1", $data['test_results']) || array_key_exists("prepare", $data['test_results'])) {
+				if (array_key_exists("1", $data['test_results']))
+					$prepare_test = $data['test_results']['1'];
+				else
+					$prepare_test = $data['test_results']['prepare'];
+				if (array_key_exists("parsed_output", $prepare_test['tools']['compile'])) {
 					$filename = $r[6];
-					foreach ($data['test_results']["1"]['tools']['compile']['parsed_output'] as $msg) {
+					foreach ($prepare_test['tools']['compile']['parsed_output'] as $msg) {
 						if ($msg['type'] == "error") 
 							$output .= "Greška: ";
 						else if ($msg['type'] == "warning") 
@@ -500,11 +505,11 @@ else if ($_REQUEST['action'] == "setResult") {
 						$output .= ":\n" . $msg['message']."\n\n";
 					}
 				}
-				if ($output == "" && array_key_exists("output", $data['test_results']["1"]['tools']['compile']))
-					$output = $data['test_results']["1"]['tools']['compile']['output'];
+				if ($output == "" && array_key_exists("output", $prepare_test['tools']['compile']))
+					$output = $prepare_test['compile']['output'];
 				$compiler_output = db_escape($output); // staviti u izvjestaj_skripte
 				
-				if ($data['test_results']['1']['status'] != 1)
+				if ($prepare_test['status'] != 1)
 					$program_status = 3; // 3 = ne može se kompajlirati
 			}
 			
@@ -514,7 +519,7 @@ else if ($_REQUEST['action'] == "setResult") {
 				zamgerlog2("autotestiran student", intval($student), intval($zadaca), intval($zadatak));
 			}
 			
-			// Zapisujemo rezultat testa u fajl 
+			// Zapisujemo rezultat testa u fajl
 			$result_path = "$conf_files_path/zadace/$predmet-$ag/$student/$zadaca/$zadatak-result.json";
 			file_put_contents($result_path, json_encode($data, JSON_PRETTY_PRINT));
 			
@@ -524,7 +529,7 @@ else if ($_REQUEST['action'] == "setResult") {
 			$sources = getSources("$conf_files_path/zadace/$predmet-$ag/$student/$zadaca/$filename", $jezik);
 			
 			foreach($data['test_results'] as $test => $tr) {
-				if ($test == 1) continue;
+				if ($test == '1' || $test == 'prepare') continue;
 				$nalaz = ""; // Čehajić Harun Z3/Z1 ??
 				$izlaz_programa = db_escape_string($tr['tools']['execute']['output']);
 				switch($tr['status']) {
@@ -654,6 +659,7 @@ else if ($_REQUEST['action'] == "setResult") {
 		
 				$specifikacija_hosta = "<b>Testni sistem:</b><br>".db_escape($data['buildhost_description']['id'])."<br><br><b>OS:</b><br>".$bhos."<br><br><b>Verzija kompajlera:</b><br>".db_escape($data['tools']['compile'])."<br><br><b>Opcije kompajlera:</b><br>".db_escape($komp_opc)."<br><br><b>Verzija debuggera</b><br>".db_escape($data['tools']['debug'])."<br><br><b>Verzija profilera:</b><br>".db_escape($data['tools']['profile[memcheck]']);
 				
+				$test = intval($test);
 				$q2 = db_query("DELETE FROM autotest_rezultat WHERE autotest=$test AND student=$student");
 				$q2 = db_query("INSERT INTO autotest_rezultat SET autotest=$test, student=$student, izlaz_programa='$izlaz_programa', status='$status', nalaz='$nalaz', vrijeme=NOW(), trajanje=$trajanje, testni_sistem='$specifikacija_hosta'");
 			}
