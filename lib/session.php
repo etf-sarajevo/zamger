@@ -124,7 +124,6 @@ function login($pass, $type = "") {
 	session_start();
 	//session_regenerate_id(); // prevent session fixation
 	$_SESSION['login']=$login;
-	$_SESSION['api_session'] = $result['sid'];
 	session_write_close();
 	return 0;
 }
