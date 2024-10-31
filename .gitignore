@@ -7,3 +7,4 @@
 /docker/dbdata/*
 /composer.lock
 /composer.phar
+/static/js/ace*
