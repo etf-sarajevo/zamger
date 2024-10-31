@@ -294,8 +294,18 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 				if ($route == "auth" || substr($route,0,6) == "person") {
 					print "Response: $http_result";
 					exit(0);
-				} else
-					api_report_bug([], []);
+				} else {
+					$bt = debug_backtrace();
+					$caller = array_shift($bt);
+					api_report_bug(["message" => "Failed to decode result as JSON"], [
+						"note" => "Constructed by ws.php",
+						"route" => $route,
+						"params" => $params,
+						"method" => $method,
+						"caller_line" => $caller['line'],
+						"caller_file" => $caller['file']
+					]);
+				}
 			}
 			return FALSE;
 		}
