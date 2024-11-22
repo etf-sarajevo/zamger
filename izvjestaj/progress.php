@@ -116,7 +116,7 @@ while ($r110 = db_fetch_row($q110)) {
 				<th width="155">Predmet</th>
 				<th width="75">Ak. godina</th>
 				<th width="75">Prisustvo</th>
-				<th width="75">Zadaće i seminarski</th>
+				<th width="75">Ostale aktivnosti</th>
 				<th width="75">I parcijalni</th>
 				<th width="75">II parcijalni</th>
 				<th width="75">Integralni</th>
@@ -148,30 +148,42 @@ while ($r110 = db_fetch_row($q110)) {
 			
 			// Od kojih komponenti se sastoji ispit?
 			$prisustvo = $zadace = $parc1 = $parc2 = $int = $zavrsni = $ukupno = "&nbsp;";
-			$kp1 = $kp2 = 0; // Čuvamo id-ove komponenti za 1 i 2 parcijalni, radi kasnijeg ispisa
+			$kp1 = $kp2 = $kz = []; // Čuvamo id-ove komponenti za 1 i 2 parcijalni, radi kasnijeg ispisa
 			
-			$q130 = db_query("select k.id, k.gui_naziv, k.tipkomponente, kb.bodovi from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp, komponentebodovi as kb where agp.predmet=$r120[2] and agp.akademska_godina=$r110[0] and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and kb.komponenta=k.id and kb.student=$student and kb.predmet=$r120[0]");
+			$q130 = db_query("SELECT k.id, k.naziv, k.aktivnost, kb.bodovi, k.opcije
+							FROM aktivnost_predmet as k, aktivnost_agp as aagp, komponentebodovi as kb
+							WHERE aagp.predmet=$r120[2] and aagp.akademska_godina=$r110[0] and aagp.aktivnost_predmet=k.id and kb.komponenta=k.id and kb.student=$student and kb.predmet=$r120[0]");
 			while ($r130 = db_fetch_row($q130)) {
 				$bodovi = $r130[3];
-				if ($r130[2] == 1) { // tip komponente = ispit
+				if ($r130[2] == 8) { // tip komponente = ispit
 					if ($r130[1] == "I parcijalni" || $r130[1] == "I parc" || $r130[1] == "Parcijalni" || $r130[1] == "1 parcijalni" || $r130[1] == "1. parcijalni") {
-						$kp1 = $r130[0];
+						$kp1[] = $r130[0];
 						$parc1 += $bodovi;
 					} else if ($r130[1] == "II parcijalni" || $r130[1] == "II parc" || $r130[1] == "2 parcijalni" || $r130[1] == "2. parcijalni") {
-						$kp2 = $r130[0];
+						$kp2[] = $r130[0];
 						$parc2 += $bodovi;
-					} else if ($r130[1] == "Usmeni" || $r130[1] == "Završni" || $r130[1] == "Usmeni ispit" || $r130[1] == "Završni ispit")
+					} else if ($r130[1] == "Usmeni" || $r130[1] == "Završni" || $r130[1] == "Usmeni ispit" || $r130[1] == "Završni ispit") {
+						$kz[] = $r130[0];
 						$zavrsni += $bodovi;
-					else // Ako je nepoznat tip ispita, pribrajamo prvom parcijalnom
+					} else if (stristr($r130[1], "parcijalni")) { // Nepoznat tip ispita, pribrajamo 1. parc
+						if (count($kp1) == 0) $kp1[] = $r130[0]; else if (count($kp2) == 0) $kp2[] = $r130[0]; else $kp1[] = $r130[0];
 						$parc1 += $bodovi;
+					}
+					else if (stristr($r130[1], "završni") || stristr($r130[1], "usmeni") || stristr($r130[1], "zavrsni")) {
+						$kz[] = $r130[0];
+						$zavrsni += $bodovi;
+					}
+					else if (strstr($r130[4], "Integral")) { // tip komponente = integralni
+						$int += $bodovi;
+					}
+					else // Ako je nepoznat tip ispita, pribrajamo zadaćama (jer se neće vidjeti na razdvoji==1)
+						$zadace += $bodovi;
 				}
-				else if ($r130[2] == 2) // tip komponente = integralni
-					$int += $bodovi;
-				else if ($r130[2] == 3) // prisustvo
+				else if ($r130[2] == 9) // prisustvo
 					$prisustvo += $bodovi;
-				else if ($r130[2] == 4) // zadace
+				else if ($r130[2] == 2) // zadace
 					$zadace += $bodovi;
-				else if ($r130[2] == 5) { // fiksna komponenta
+				else if ($r130[2] == 0 || $r130[2] == null) { // fiksna komponenta
 					if ($r130[1] == "Prisustvo")
 						$prisustvo += $bodovi;
 					else if ($r130[1] == "Zadaće" || $r130[1] == "Zadace")
@@ -198,20 +210,23 @@ while ($r110 = db_fetch_row($q110)) {
 				print "<td>$parc1</td><td>$parc2</td><td>$int</td>";
 			} else {
 				// Treba razdvojiti ispite... gledamo tabelu ispiti
-				$q140 = db_query("select io.ocjena, i.komponenta, i.datum, k.tipkomponente from ispitocjene as io, ispit as i, ponudakursa as pk, komponenta as k where io.student=$student and io.ispit=i.id  and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$r120[0] and i.komponenta=k.id order by i.datum");
-
+				$q140 = db_query("SELECT io.ocjena, i.komponenta, i.datum, k.opcije
+								FROM ispitocjene as io, ispit as i, ponudakursa as pk, aktivnost_predmet as k
+								WHERE io.student=$student and io.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$r120[0] and i.komponenta=k.id order by i.datum");
 				$ispis = array();
-				$ispis1p = $ispis2p = $ispisint = "";
+				$ispis1p = $ispis2p = $ispisint = $ispisz = "";
 				while ($r140 = db_fetch_row($q140)) {
 					if ($r140[0] == -1) continue; // skip
 					list ($g,$m,$d) = explode("-",$r140[2]);
-					if ($r140[3] == 2) { // tipkomponente 2 = integralni
+					if (strstr($r140[3], "Integral")) { // tipkomponente 2 = integralni
 						$ispisint .= "$r140[0] ($d.$m.)<br>";
 					} else {
-						if ($r140[1]==$kp1)
+						if (in_array($r140[1], $kp1))
 							$ispis1p .= "$r140[0] ($d.$m.)<br>";
-						else if ($r140[1]==$kp2)
+						else if (in_array($r140[1], $kp2))
 							$ispis2p .= "$r140[0] ($d.$m.)<br>";
+						else if (in_array($r140[1], $kz))
+							$ispisz .= "$r140[0] ($d.$m.)<br>";
 						//else
 						// Ostale komponente ispita nećemo ni uzimati u obzir
 						// To može biti usmeni, a može biti i neprepoznata komponenta
@@ -220,11 +235,12 @@ while ($r110 = db_fetch_row($q110)) {
 				if ($ispis1p=="") $ispis1p="&nbsp;";
 				if ($ispis2p=="") $ispis2p="&nbsp;";
 				if ($ispisint=="") $ispisint="&nbsp;";
+				if ($ispisz=="") $ispisz="&nbsp;";
 	
-				print "<td>$ispis1p</td><td>$ispis2p</td><td>$ispisint</td>";
+				print "<td>$ispis1p</td><td>$ispis2p</td><td>$ispisint</td><td>$ispisz</td>";
 			}
 	
-			print "<td>$zavrsni</td><td>$ukupno</td>\n";
+			print "<td>$ukupno</td>\n";
 			
 			// Konacna ocjena
 			$q150 = db_query("select ocjena from konacna_ocjena where student=$student and predmet=$r120[2] and akademska_godina=$r110[0]");
