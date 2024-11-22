@@ -809,7 +809,7 @@ $isss_sifrarnik_spol = array( 1 => "M", 0 => "Z" );
 //		(ovaj array mora biti sortiran po ključu)
 $isss_sifrarnik_studij = array(
 	 2 => array( 0 => 130, 10 => 1757, 15 => 2000 ), // RI BSc
-	 3 => array( 0 => 80, 10 => 1755 ), // AE BSc
+	 3 => array( 0 => 80, 10 => 1755, 17 => 2507 ), // AE BSc
 	 4 => array( 0 => 125, 10 => 1756 ), // EE BSc
 	 5 => array( 0 => 132, 10 => 1758 ), // TK BSc
 	 7 => array( 0 => 789, 15 => 2003 ), // RI MSc
