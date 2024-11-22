@@ -197,7 +197,7 @@ function nastavnik_fiksne() {
 				?>
 				</tbody></table>
 				<p>U unesenim podacima ima grešaka. Da li ste izabrali ispravan format ("Prezime[TAB]Ime" vs. "Prezime Ime")? Vratite se nazad kako biste ovo popravili.</p>
-				<p><input type="submit" name="nazad" value=" Nazad "></p>
+				<p><input type="submit" name="nazad" value=" Nazad "> <input type="submit" value=" Potvrda"></p>
 				</form>
 				<?
 			}

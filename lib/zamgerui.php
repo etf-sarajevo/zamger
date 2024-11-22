@@ -437,10 +437,29 @@ function malimeni($fj) {
 	$sekcija = substr($sta, 0,strlen($sta)-strlen(strstr($sta,"/"))+1);
 
 	$predmet = 0; $dodaj = "";
+	$fiksne = $ispiti = $zadace = $kvizovi = $projekti = false;
 	if ($sekcija=="nastavnik/") {
 		$predmet = int_param('predmet');
 		$ag = int_param('ag');
 		$dodaj="&predmet=$predmet&ag=$ag";
+		$course = api_call("course/$predmet/$ag");
+		foreach($course['activities'] as $cact) {
+			if ($cact['Activity']['id'] == null || $cact['Activity']['id'] == 4) { // 0 = Fixed score
+				$fiksne = true;
+			}
+			if ($cact['Activity']['id'] == 4) {
+				$projekti = true;
+			}
+			if ($cact['Activity']['id'] == 2) {
+				$zadace = true;
+			}
+			if ($cact['Activity']['id'] == 8) {
+				$ispiti = true;
+			}
+			if ($cact['Activity']['id'] == 5) {
+				$kvizovi = true;
+			}
+		}
 	}
 	
 	if ($predmet>0) {
@@ -470,6 +489,11 @@ function malimeni($fj) {
 			if (strstr($r[0],$sekcija)) {
 				if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
 				if ($r[0]=="nastavnik/zavrsni") continue; // Ovo se prikazuje samo ako je tippredmeta == 1000 ili 1001 - završni rad
+				if ($r[0]=="nastavnik/ispiti" && !$ispiti) continue;
+				if ($r[0]=="nastavnik/zadace" && !$zadace) continue;
+				if ($r[0]=="nastavnik/fiksne" && !$fiksne) continue;
+				if ($r[0]=="nastavnik/projekti" && !$projekti) continue;
+				if ($r[0]=="nastavnik/kvizovi" && !$kvizovi) continue;
 				?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='<?=$bgcolor?>'">
 					<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[1]?></a>
 				</tr></tr>
