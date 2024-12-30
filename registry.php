@@ -53,6 +53,7 @@ array("izvjestaj/historija", "Historija studenta", "Historija studenta", "BA", "
 array("izvjestaj/index", "Uvjerenje o položenim predmetima", "Indeks", "SBA", "0", "0"),
 array("izvjestaj/index2", "Uvjerenje o položenim predmetima", "Indeks", "SBA", "0", "0"),
 array("izvjestaj/ispit", "Izvještaj za ispit", "Ispit", "NBA", "0", "0"),
+array("izvjestaj/kolizija_predmet", "Studenti na koliziji po predmetu", "Studenti na koliziji po predmetu", "BA", "0", "0"),
 array("izvjestaj/logini", "Spisak studenata i nastavnika na predmetima sa loginima", "Spisak osoba na predmetima", "BA", "2", "0"),
 array("izvjestaj/odrzana_nastava", "Izvještaj o održanoj nastavi", "Održana nastava", "N", "0", "0"),
 array("izvjestaj/pdf_converter", "Za generisanje PDF izvjestaja", "Dnevnik", "PSNBA", "2", "0"),
