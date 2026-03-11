@@ -450,6 +450,15 @@ else if ($akcija == "edit") {
 		nicemessage ("Ponuda kursa je obrisana");
 		zamgerlog("obrisana ponudakursa $ponudakursa (predmet pp$predmet, godina ag$ag)",4);
 		zamgerlog2("obrisana ponudakursa", $ponudakursa);
+		?>
+		<script language="JavaScript">
+            setTimeout(function() {
+                location.href='?sta=studentska/predmeti&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=edit';
+            }, 1000);
+		</script>
+		<?
+
+		return;
 	}
 
 	else if ($_GET['subakcija'] == "deangazuj") {
