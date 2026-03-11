@@ -20,6 +20,7 @@ function admin_misc() {
 		"broken_integral" => "Neispravan integralni ispit",
 		"upis_linkovi" => "Spisak sa linkovima na studentska/osobe radi lakšeg upisa",
 		"upis_prva" => "Upis brucoša u predmete na prvoj godini",
+		"mass_predmet" => "Masovni upis u predmete po spisku",
 		"upis_vise" => "Retroaktivni upis u predmete na višim godinama",
 		"mass_jmbg" => "Masovni unos jmbg",
 		"mass_index" => "Masovni unos broja indexa",
