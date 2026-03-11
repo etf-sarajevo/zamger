@@ -344,6 +344,7 @@ if (param('akcija') == "svi_studenti") {
 	Ponovci: <select name="ponovci"><option value="0">Redovni+ponovci</option><option value="1">Samo redovni</option><option value="2">Samo ponovci</option><option value="3">Apsolventi</option><option value="4">Ponovci bez apsolvenata</option></select><br />
 	Koji put ponavlja godinu: <input type="number" name="koji_put" value="0"><br />
 	<input type="checkbox" name="boracke">Samo studenti koji pripadaju posebnim kategorijama<br />
+	<input type="checkbox" name="ljetnji">Samo studenti upisani u ljetnji semestar<br />
 	
 	<input type="submit" value=" Prikaži "></form>
 	<?

@@ -34,6 +34,7 @@ $adresa_mjesto = param('adresa_mjesto');
 $drzavljanstvo = param('drzavljanstvo');
 $boracke = int_param('boracke');
 $zaduzenje = int_param('zaduzenje');
+$ljetnji = int_param('ljetnji');
 
 if ($ag==0) {
 	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
@@ -109,8 +110,11 @@ if ($nacin_studiranja) $redoslijed .= "ss.nacin_studiranja, ";
 
 $uslov_semestar = " and ss.semestar mod 2 = 1"; // Bilo koji neparan semestar
 if ($ponovci == 3) $uslov_semestar = " and ss.semestar mod 2 = 0"; // HACK u 2019/2020 godini apsolventi su samo u parni semestar upisani
-if ($godina > 0)
+if ($godina > 0) {
 	$uslov_semestar = " and ss.semestar=".($godina*2-1);
+	if ($ljetnji > 0)
+		$uslov_semestar = " and ss.semestar=".($godina*2);
+}
 
 $q30 = db_query("SELECT o.id, o.ime, o.prezime $kolone , o.kanton FROM osoba as o, student_studij as ss $tabele WHERE ss.student=o.id and ss.akademska_godina=$ag $uslov_semestar $uslovi order by $redoslijed o.prezime, o.ime");
 $rbr = 1; $oldid = 0;
