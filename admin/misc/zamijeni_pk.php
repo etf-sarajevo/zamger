@@ -272,7 +272,7 @@ function admin_misc_zamijeni_pk() {
 		?>
 		<?=genform("POST")?>
 		<input type="hidden" name="akcija" value="zamijeni_pk">
-		Unesite ID osobe: <input type="text" name="osoba" value=""><br>
+		Unesite ID osobe: <input type="text" name="osoba" value=""> (prazno za sve studente na staroj ponudi kursa)<br>
 		Stara ponudakursa: <input type="text" name="old_pk" value=""><br>
 		Nova ponudakursa: <input type="text" name="new_pk" value=""><br>
 		<input type="submit" value=" Migriraj podatke na drugu ponudu kursa ">
