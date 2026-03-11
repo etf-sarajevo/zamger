@@ -6,6 +6,7 @@ function admin_misc_upis_linkovi() {
 	$nova_ag = intval($_REQUEST['ag']);
 	$godina = intval($_REQUEST['godina']);
 	$parni = intval($_REQUEST['parni']);
+	$studij = intval($_REQUEST['studij']);
 	$neparni = 1-$parni;
 	if (isset($_REQUEST['direktno'])) $direktno = true; else $direktno = false;
 	if (isset($_REQUEST['kolizija'])) $kolizija = true; else $kolizija = false;
@@ -13,9 +14,10 @@ function admin_misc_upis_linkovi() {
 	$stari_semestar = $godina*2 - $parni;
 	$novi_semestar = $stari_semestar+1;
 	$stara_ag = $nova_ag - $neparni;
+	$add_studij = ($studij > 0) ? " and ss.studij=$studij" : "";
 	
-	$q10 = db_query("select o.id, o.ime, o.prezime, o.brindexa, ss.studij from osoba as o, student_studij as ss where ss.akademska_godina=$stara_ag and ss.semestar=$stari_semestar and
-ss.student=o.id order by o.prezime, o.ime");
+	$q10 = db_query("select o.id, o.ime, o.prezime, o.brindexa, ss.studij from osoba as o, student_studij as ss where ss.akademska_godina=$stara_ag and ss.semestar=$stari_semestar and ss.student=o.id $add_studij
+	order by o.prezime, o.ime");
 	while ($r10 = db_fetch_row($q10)) {
 		if ($kolizija) {
 			$q20 = db_query("SELECT count(*) FROM kolizija WHERE student=$r10[0] AND akademska_godina=$nova_ag");
