@@ -56,7 +56,7 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 		else $q90 = db_query("insert into akademska_godina_predmet set akademska_godina=$ag, predmet=$predmet, tippredmeta=$tippredmeta");
 	}
 	// Isto to za aktivnost_agp
-	$q80 = db_query("select akademska_godina, aktivnost_predmet from aktivnost_agp where predmet=$predmet and akademska_godina<$ag order by akademska_godina desc limit 1");
+	$q80 = db_query("select akademska_godina, aktivnost_predmet from aktivnost_agp where predmet=$predmet and akademska_godina<=$ag order by akademska_godina desc limit 1");
 	if (db_num_rows($q80)==0) {
 		$aktivnosti = [ 1, 2, 3, 4, 5, 6 ]; // wtf this works
 		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Dodajem slog u aktivnost_agp<br>\n";
