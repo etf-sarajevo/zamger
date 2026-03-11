@@ -483,37 +483,37 @@ else if ($_REQUEST['action'] == "setResult") {
 			// Ako da, uzimamo njegove poruke
 			$output = "";
 			$program_status = $data['status']; // polje status, 4 = završeno testiranje
-			if (array_key_exists("1", $data['test_results']) || array_key_exists("prepare", $data['test_results'])) {
-				if (array_key_exists("1", $data['test_results']))
-					$prepare_test = $data['test_results']['1'];
-				else
-					$prepare_test = $data['test_results']['prepare'];
-				if (array_key_exists("parsed_output", $prepare_test['tools']['compile'])) {
-					$filename = $r[6];
-					foreach ($prepare_test['tools']['compile']['parsed_output'] as $msg) {
-						if ($msg['type'] == "error") 
-							$output .= "Greška: ";
-						else if ($msg['type'] == "warning") 
-							$output .= "Upozorenje: ";
-						else
-							$output .= $msg['type']." ";
-						if (ends_with($msg['file'],$filename)) //($attach==1)
-							$output .= "U liniji ".$msg['line'];
-						else
-							$output .= "U datoteci ".$msg['file']." linija ".$msg['line'];
-						if (array_key_exists("col", $msg)) $output .= " kolona ".$msg['col'];
-						$output .= ":\n" . $msg['message']."\n\n";
-					}
-				}
-				if ($output == "" && array_key_exists("output", $prepare_test['tools']['compile']))
-					$output = $prepare_test['compile']['output'];
-				$compiler_output = db_escape($output); // staviti u izvjestaj_skripte
-				
-				if ($prepare_test['status'] != 1)
-					$program_status = 3; // 3 = ne može se kompajlirati
-			}
 			
 			if ($program_status == 3 || $program_status == 4) {
+				// Uzimamo status prepare testa ako postoji
+				if (array_key_exists("prepare", $data['test_results'])) {
+					$prepare_test = $data['test_results']['prepare'];
+					if (array_key_exists("compile", $prepare_test['tools']) && array_key_exists("parsed_output", $prepare_test['tools']['compile'])) {
+						$filename = $r[6];
+						foreach ($prepare_test['tools']['compile']['parsed_output'] as $msg) {
+							if ($msg['type'] == "error") 
+								$output .= "Greška: ";
+							else if ($msg['type'] == "warning") 
+								$output .= "Upozorenje: ";
+							else
+								$output .= $msg['type']." ";
+							if (ends_with($msg['file'],$filename)) //($attach==1)
+								$output .= "U liniji ".$msg['line'];
+							else
+								$output .= "U datoteci ".$msg['file']." linija ".$msg['line'];
+							if (array_key_exists("col", $msg)) $output .= " kolona ".$msg['col'];
+							$output .= ":\n" . $msg['message']."\n\n";
+						}
+					}
+					if ($output == "" && array_key_exists("compile", $prepare_test['tools']) && array_key_exists("output", $prepare_test['tools']['compile'])) {
+						$output = $prepare_test['tools']['compile']['output'];
+					}
+					$compiler_output = db_escape($output); // staviti u izvjestaj_skripte
+					
+					if ($prepare_test['status'] != 1)
+						$program_status = 3; // 3 = ne može se kompajlirati
+				}
+				
 				$q2 = db_query("INSERT INTO zadatak SET zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=$program_status, bodova=$bodova, izvjestaj_skripte='$compiler_output', vrijeme=NOW(), komentar='".db_escape_string($komentar)."', filename='".db_escape_string($filename)."', userid=$userid");
 				zamgerlog("autotestiran student u$student z$zadaca zadatak $zadatak", 2);
 				zamgerlog2("autotestiran student", intval($student), intval($zadaca), intval($zadatak));
